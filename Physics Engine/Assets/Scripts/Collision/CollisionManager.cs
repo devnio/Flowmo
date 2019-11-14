@@ -90,7 +90,6 @@ public class CollisionManager : Singleton<CollisionManager>
 
                     if (b != null && s != null)
                     {
-                        Debug.Log("Collision Sphere Box");
                         if (AreSphereOBBColliding(b, s))
                         {
                             Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
@@ -225,21 +224,38 @@ public class CollisionManager : Singleton<CollisionManager>
     //---------------------------------
     // OBB vs Sphere
     //---------------------------------
-    public bool AreSphereOBBColliding(ColliderBox box, SphereCollider sphere)
+    public bool AreSphereOBBColliding(ColliderBox b, SphereCollider s)
     {
-        // TODO: Implement.
+        // Get axis from first cube
+        Cube c = b.cube;
 
+        Vector3 cAxis1 = c.vertices[(int)CubeIdx.B] - c.vertices[(int)CubeIdx.A];
+        Vector3 cAxis2 = c.vertices[(int)CubeIdx.D] - c.vertices[(int)CubeIdx.A];
+        Vector3 cAxis3 = c.vertices[(int)CubeIdx.E] - c.vertices[(int)CubeIdx.A];
+        Vector3[] axes = { cAxis1, cAxis2, cAxis3 };
 
-        return false;
+        for (int i = 0; i < axes.Length; i++)
+        {
+            if (SeparatingAxisCheck(b, s, axes[i])) return false;
+        }
+
+        return true;
     }
 
+    /// <summary>
+    /// Returns true if there is a separating axis. Once one is found we know that the bodies don't collide.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="s"></param>
+    /// <param name="ax"></param>
+    /// <returns></returns>
     private bool SeparatingAxisCheck(ColliderBox b, SphereCollider s, Vector3 ax)
     {
         if (ax == Vector3.zero) return false;
 
         ax.Normalize();
 
-        Cube c1 = b.cube;
+        Cube c = b.cube;
 
         float cMax = float.MinValue;
         float cMin = float.MaxValue;
@@ -248,13 +264,21 @@ public class CollisionManager : Singleton<CollisionManager>
         for (int i = 0; i < 8; i++)
         {
             // Project point to axis;
-            float cProj = Vector3.Dot(c1.vertices[i], ax);
+            float cProj = Vector3.Dot(c.vertices[i], ax);
 
             cMax = Mathf.Max(cMax, cProj);
             cMin = Mathf.Min(cMin, cProj);
         }
 
-        bool noCollision = true;
+        float sProj = Vector3.Dot(s._center, ax);
+        float sMin = sProj - s.Radius;
+        float sMax = sProj + s.Radius;
+
+        float overlapSpan = (cMax - cMin) + (sMax - sMin);
+        float longSpan = Mathf.Max(sMax, cMax) - Mathf.Min(sMin, cMin);
+
+        bool noCollision = longSpan > overlapSpan;
+
         return noCollision;
     }
 
