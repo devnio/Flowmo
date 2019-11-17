@@ -18,8 +18,13 @@ public class CollisionManager : Singleton<CollisionManager>
     public Dictionary<int, Vector3> CachedSeparatingAxis;
     
     // Collision resolution values of current check
+    // Be careful to always set these values before using them.
+    // Obb - Obb
     private Vector3 currentMinPenetrationAxis;
     private float currentMinPenetrationDistance;
+
+    // Obb - Sphere
+    private Vector3 currentClosestPointOnObb;
 
     private void Start()
     {
@@ -226,60 +231,38 @@ public class CollisionManager : Singleton<CollisionManager>
     //---------------------------------
     public bool AreSphereOBBColliding(ColliderBox b, SphereCollider s)
     {
-        // Get axis from first cube
-        Cube c = b.cube;
+        Tuple<Vector3, bool> infoClosestPoint = Util.FindClosestPoint(b, s);
+        this.currentClosestPointOnObb = infoClosestPoint.Item1;
+        bool sphereInsideObb = infoClosestPoint.Item2;
 
-        Vector3 cAxis1 = c.vertices[(int)CubeIdx.B] - c.vertices[(int)CubeIdx.A];
-        Vector3 cAxis2 = c.vertices[(int)CubeIdx.D] - c.vertices[(int)CubeIdx.A];
-        Vector3 cAxis3 = c.vertices[(int)CubeIdx.E] - c.vertices[(int)CubeIdx.A];
-        Vector3[] axes = { cAxis1, cAxis2, cAxis3 };
+        float distSphereObbPoint = (this.currentClosestPointOnObb - s._center).sqrMagnitude;
 
-        for (int i = 0; i < axes.Length; i++)
-        {
-            if (SeparatingAxisCheck(b, s, axes[i])) return false;
-        }
+        bool collision = distSphereObbPoint < s.SqrRadius;
+        if (collision) this.CollisionResolutionObbSphere(b, s, sphereInsideObb);
 
-        return true;
+        return collision;
     }
 
-    /// <summary>
-    /// Returns true if there is a separating axis. Once one is found we know that the bodies don't collide.
-    /// </summary>
-    /// <param name="b"></param>
-    /// <param name="s"></param>
-    /// <param name="ax"></param>
-    /// <returns></returns>
-    private bool SeparatingAxisCheck(ColliderBox b, SphereCollider s, Vector3 ax)
+    public void CollisionResolutionObbSphere(ColliderBox b, SphereCollider s, bool sphereInsideObb)
     {
-        if (ax == Vector3.zero) return false;
+        Vector3 temp = this.currentClosestPointOnObb - s._center;
+        float mtd = s.Radius - temp.magnitude;
+        float dirMult = sphereInsideObb ? 1 : -1;
+        Vector3 dir = temp.normalized * dirMult;
 
-        ax.Normalize();
-
-        Cube c = b.cube;
-
-        float cMax = float.MinValue;
-        float cMin = float.MaxValue;
-
-        // Project points from cubes to ax. Find extreme points in the axis.
-        for (int i = 0; i < 8; i++)
+        Vector3 currPoint = s._center;
+        Vector3 projPoint;
+        if (!sphereInsideObb)
         {
-            // Project point to axis;
-            float cProj = Vector3.Dot(c.vertices[i], ax);
+            projPoint = currPoint + dir * mtd;
+        }
+        else
+        {
+            projPoint = currPoint + dir * (mtd + s.Radius);
 
-            cMax = Mathf.Max(cMax, cProj);
-            cMin = Mathf.Min(cMin, cProj);
         }
 
-        float sProj = Vector3.Dot(s._center, ax);
-        float sMin = sProj - s.Radius;
-        float sMax = sProj + s.Radius;
-
-        float overlapSpan = (cMax - cMin) + (sMax - sMin);
-        float longSpan = Mathf.Max(sMax, cMax) - Mathf.Min(sMin, cMin);
-
-        bool noCollision = longSpan > overlapSpan;
-
-        return noCollision;
+        this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint);
     }
 
     //---------------------------------
@@ -514,5 +497,14 @@ public class CollisionManager : Singleton<CollisionManager>
     {
         SATDebugCube.SetActive(true);
         SATDebugCube.transform.rotation = Quaternion.FromToRotation(Vector3.right, this.currentMinPenetrationAxis);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Color col = Color.cyan;
+        col.a = 0.7f;
+        Gizmos.color = col;
+
+        Gizmos.DrawSphere(this.currentClosestPointOnObb, 0.3f);
     }
 }

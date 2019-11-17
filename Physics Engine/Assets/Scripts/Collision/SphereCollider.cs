@@ -8,6 +8,8 @@ public class SphereCollider : BaseCollider
     private float _initialMaxScale;
     private float _assignedRadius;
     public float Radius;
+    [HideInInspector]
+    public float SqrRadius;
 
     private void Start()
     {
@@ -21,6 +23,7 @@ public class SphereCollider : BaseCollider
         this._initialMaxScale = Mathf.Max(this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
         this._assignedRadius = this.Radius;
         this.isRunning = true;
+        this.SqrRadius = this.Radius * this.Radius;
     }
 
     public override void UpdateColliderPose(Vector3 displace)
@@ -28,12 +31,12 @@ public class SphereCollider : BaseCollider
         // displace used for finding min penetration distance for collision
         this._center = this.transform.TransformPoint(this.displaceCenter + displace);
 
-        // relative to localScale
-        if (this.isRunning)
-        {
-            var maxScale = Mathf.Max(this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
-            this.Radius = this._assignedRadius * (maxScale / this._initialMaxScale);
-        }
+        // relative to localScale (UNCOMMENT IF SCALE IS CHANGING DURING RUNTIME)
+        //if (this.isRunning)
+        //{
+        //    var maxScale = Mathf.Max(this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
+        //    this.Radius = this._assignedRadius * (maxScale / this._initialMaxScale);
+        //}
         
     }
 

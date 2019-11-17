@@ -27,7 +27,8 @@ public class ParticleObject : MonoBehaviour
 
     public ObjectType objectType;
 
-    public Vector3 gravityAcceleraiton;
+    private Vector3 gravityAcceleraiton;
+    public bool UseGravity = true;
     public Vector3 acceleration;
     public Vector3 velocity;
 
@@ -68,7 +69,8 @@ public class ParticleObject : MonoBehaviour
         VerletSimulation.Instance.AddParticleObject(this);
 
         // Initialize acceleration
-        acceleration += gravityAcceleraiton;
+        gravityAcceleraiton = new Vector3(0, -9.81f, 0);
+        if (this.UseGravity) acceleration += gravityAcceleraiton;
     }
 
     /// <summary>

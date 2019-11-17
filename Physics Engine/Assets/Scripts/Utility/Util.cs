@@ -34,7 +34,76 @@ public static class Util
     // ============================
     // COLLISION
     // ============================
-    
+    /// <summary>
+    /// Finds the closest point on the OBB given another point.
+    /// </summary>
+    /// <param name="b"></param>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static Tuple<Vector3, bool> FindClosestPoint(ColliderBox b, SphereCollider s)
+    {
+        Cube c = b.cube;
+
+        Vector3 cAxis1 = c.vertices[(int)CubeIdx.D] - c.vertices[(int)CubeIdx.A];  // local x
+        Vector3 cAxis2 = c.vertices[(int)CubeIdx.E] - c.vertices[(int)CubeIdx.A];  // local y
+        Vector3 cAxis3 = c.vertices[(int)CubeIdx.B] - c.vertices[(int)CubeIdx.A];  // local z
+
+        Vector3[] axes = { cAxis1.normalized, cAxis2.normalized, cAxis3.normalized };
+        Vector3 halfLenghts = b._xyzLength / 2f;
+
+        // Represent sphere position from obbs origin
+        bool centerIsInsideObb = true;
+        Vector3 closestPoint = b._center;
+        Vector3 point = s._center - b._center;
+        for (int i = 0; i < axes.Length; i++)
+        {
+            // Project the point and
+            float projValue = Vector3.Dot(point, axes[i]);
+
+            // See if point is bigger than half extents of obb
+            float halfLength = halfLenghts[i];
+
+            Logger.Instance.DebugInfo("Proj Value " + i + ": " + projValue + ", HalfLen: " + halfLength, "SPHERE-OBB CHECK");
+
+            // Manual clamping
+            if (projValue < -halfLength)
+            {
+                centerIsInsideObb = false;
+                projValue = -halfLength;
+            }
+            else if (projValue > halfLength)
+            {
+                centerIsInsideObb = false;
+                projValue = halfLength;
+            }
+
+            closestPoint += axes[i] * projValue;            
+        }
+
+        // If center is inside Obb we have to find the nearest face and project the point there (need for collision resolution)
+        if (centerIsInsideObb)
+        {
+            float min = float.MaxValue;
+            int idx = 0;
+            float faceDir = 1;
+            for (int i = 0; i < axes.Length; i++)
+            {
+                float projValue = Vector3.Dot(point, axes[i]);
+                float halfLength = halfLenghts[i];
+                float diff = Mathf.Min(min, halfLength - Mathf.Abs(projValue));
+                if (min > diff)
+                {
+                    faceDir = Mathf.Sign(projValue);
+                    min = diff;
+                    idx = i;
+                }
+            }
+            closestPoint += axes[idx] * faceDir * min;
+        }
+            
+
+        return new Tuple<Vector3, bool>(closestPoint, centerIsInsideObb);
+    }
 
     // ============================
     // EXTENSIONS
