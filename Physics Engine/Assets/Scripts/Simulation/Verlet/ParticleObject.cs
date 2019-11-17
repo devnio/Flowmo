@@ -157,7 +157,7 @@ public class ParticleObject : MonoBehaviour
 
     private void UpdateGameObjectOrientation()
     {
-        Quaternion quat = this.GetOrientationAxis();
+        Quaternion quat = this.GetTetraFrameRotation();
         this.transform.rotation = quat * this.tetraCoordinateFrame * this.initialOrientation;
     }
 
@@ -166,23 +166,20 @@ public class ParticleObject : MonoBehaviour
     /// </summary>
     private void SetOrientationAxis()
     {
-        this.tetraCoordinateFrame = Quaternion.Inverse(this.GetOrientationAxis());
+        this.tetraCoordinateFrame = Quaternion.Inverse(this.GetTetraFrameRotation());
         this.initialOrientation = this.transform.rotation;
     }
 
-    private Quaternion GetOrientationAxis()
+    private Quaternion GetTetraFrameRotation()
     {
         Vector3 A = this.particles[0].position;
         Vector3 B = this.particles[2].position;
         Vector3 C = this.particles[3].position;
 
-        //Vector3 A = this.particles[0].position;
-        //Vector3 D = this.particles[1].position;
         Vector3 dir1 = B - A;
         Vector3 dir2 = C - B;
         
         return Quaternion.LookRotation(dir1, dir2);
-        //return dir1;
     }
 
     //------------------------
