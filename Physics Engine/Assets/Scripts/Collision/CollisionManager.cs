@@ -247,7 +247,7 @@ public class CollisionManager : Singleton<CollisionManager>
     {
         Vector3 temp = this.currentClosestPointOnObb - s._center;
         float mtd = s.Radius - temp.magnitude;
-        float dirMult = sphereInsideObb ? 1 : -1;
+        float dirMult = sphereInsideObb ? 1 : -1; 
         Vector3 dir = temp.normalized * dirMult;
 
         Vector3 currPoint = s._center;
