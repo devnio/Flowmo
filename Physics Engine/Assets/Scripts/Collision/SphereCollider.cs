@@ -24,6 +24,8 @@ public class SphereCollider : BaseCollider
         this._assignedRadius = this.Radius;
         this.isRunning = true;
         this.SqrRadius = this.Radius * this.Radius;
+
+        Logger.Instance.DebugInfo("Radius: " + this.Radius.ToString() + "SqrRadius: " + this.SqrRadius.ToString(), "SPHERE COLLIDER");
     }
 
     public override void UpdateColliderPose(Vector3 displace)

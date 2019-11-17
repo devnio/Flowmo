@@ -13,6 +13,7 @@ public class ParticleObject : MonoBehaviour
 {
     // Take direction of 2 particles and use for orienting
     private Vector3 orientationAxis;
+    private Quaternion initialOrientation;
 
     [HideInInspector]
     public Vector3 prevCenterOfMass; // used for the collision point q (the one to shift towards)
@@ -118,12 +119,9 @@ public class ParticleObject : MonoBehaviour
 
     public void SatisfyConstraints(int iterations = 1)
     {
-        for (int i = 0; i < iterations; i++)
+        foreach (Constraint c in constraints)
         {
-            foreach (Constraint c in constraints)
-            {
-                c.ConstraintUpdate();
-            }
+            c.ConstraintUpdate();
         }
     }
 
@@ -170,6 +168,7 @@ public class ParticleObject : MonoBehaviour
     private void SetOrientationAxis()
     {
         this.orientationAxis = this.GetOrientationAxis();
+        //this.initialOrientation = this.transform.rotation;
     }
 
     private Vector3 GetOrientationAxis()

@@ -238,7 +238,7 @@ public class CollisionManager : Singleton<CollisionManager>
         float distSphereObbPoint = (this.currentClosestPointOnObb - s._center).sqrMagnitude;
 
         bool collision = distSphereObbPoint < s.SqrRadius;
-        if (collision) this.CollisionResolutionObbSphere(b, s, sphereInsideObb);
+        if (collision || sphereInsideObb) this.CollisionResolutionObbSphere(b, s, sphereInsideObb);
 
         return collision;
     }
@@ -246,24 +246,17 @@ public class CollisionManager : Singleton<CollisionManager>
     public void CollisionResolutionObbSphere(ColliderBox b, SphereCollider s, bool sphereInsideObb)
     {
         Vector3 temp = this.currentClosestPointOnObb - s._center;
-        float mtd = s.Radius - temp.magnitude;
-        float dirMult = sphereInsideObb ? 1 : -1; 
+        //float mtd = s.Radius - temp.magnitude;
+        float dirMult = sphereInsideObb ? -1 : 1; 
         Vector3 dir = temp.normalized * dirMult;
 
-        Vector3 currPoint = s._center;
-        Vector3 projPoint;
-        if (!sphereInsideObb)
-        {
-            projPoint = currPoint + dir * mtd;
-        }
-        else
-        {
-            projPoint = currPoint + dir * (mtd + s.Radius);
+        Vector3 currPoint = s._center + dir * s.Radius;
+        Vector3 projPoint = this.currentClosestPointOnObb;
 
-        }
-
-        this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint);
+        this.SeparateParticleObjects(b.GetParticleObject(), projPoint, currPoint);
     }
+
+    // TODO: Add function for moving particle objects between obb and sphere
 
     //---------------------------------
     // Sphere vs Sphere

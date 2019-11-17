@@ -17,6 +17,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     // ===========
     // PUBLIC
     // ===========
+    public int ConstraintIterations;
     public List<ParticleObject> ParticleObjects;
 
 
@@ -43,7 +44,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         CollisionManager.Instance.DetectCollisions();
 
         // Satisfy Constraints
-        SatisfyConstraints(4);
+        SatisfyConstraints(this.ConstraintIterations);
     }
 
     public void UpdateParticles(float dt)
