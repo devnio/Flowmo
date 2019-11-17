@@ -12,7 +12,7 @@ public enum ObjectType
 public class ParticleObject : MonoBehaviour
 {
     // Take direction of 2 particles and use for orienting
-    private Vector3 orientationAxis;
+    private Quaternion tetraCoordinateFrame;
     private Quaternion initialOrientation;
 
     [HideInInspector]
@@ -109,9 +109,8 @@ public class ParticleObject : MonoBehaviour
                     //{
                     //    p.prevPosition = temp;
                     //}
-                    
                 }
-                this.UpdateGameObjectPose();
+                this.UpdateGameObjectPose(); 
             }
             else integrateThisFrame = true;
         }
@@ -158,8 +157,8 @@ public class ParticleObject : MonoBehaviour
 
     private void UpdateGameObjectOrientation()
     {
-        Vector3 dir = this.GetOrientationAxis();
-        this.transform.rotation = Quaternion.FromToRotation(this.orientationAxis, dir);
+        Quaternion quat = this.GetOrientationAxis();
+        this.transform.rotation = quat * this.tetraCoordinateFrame * this.initialOrientation;
     }
 
     /// <summary>
@@ -167,16 +166,23 @@ public class ParticleObject : MonoBehaviour
     /// </summary>
     private void SetOrientationAxis()
     {
-        this.orientationAxis = this.GetOrientationAxis();
-        //this.initialOrientation = this.transform.rotation;
+        this.tetraCoordinateFrame = Quaternion.Inverse(this.GetOrientationAxis());
+        this.initialOrientation = this.transform.rotation;
     }
 
-    private Vector3 GetOrientationAxis()
+    private Quaternion GetOrientationAxis()
     {
         Vector3 A = this.particles[0].position;
-        Vector3 D = this.particles[1].position;
-        Vector3 dir = D - A; 
-        return dir;
+        Vector3 B = this.particles[2].position;
+        Vector3 C = this.particles[3].position;
+
+        //Vector3 A = this.particles[0].position;
+        //Vector3 D = this.particles[1].position;
+        Vector3 dir1 = B - A;
+        Vector3 dir2 = C - B;
+        
+        return Quaternion.LookRotation(dir1, dir2);
+        //return dir1;
     }
 
     //------------------------
@@ -185,6 +191,8 @@ public class ParticleObject : MonoBehaviour
     private bool E_pointsTransformedInLocalSpace = false;
     private void OnDrawGizmos()
     {
+        float percent = 0f;
+        float step = 1f / particles.Length;
         // Draw Particles and Constraints
         if (particles != null)
         {
@@ -198,17 +206,18 @@ public class ParticleObject : MonoBehaviour
                     this.centerOfMass = this.ComputeCenterOfMass(true);
                 }
 
-                color = Color.red;
-                color.a = 0.5f;
+                color = Color.Lerp(Color.magenta, Color.yellow, percent);
+                percent += step;
+                color.a = 0.75f;
                 Gizmos.color = color;
 
                 Gizmos.DrawSphere(pLocal, 0.2f);
 
                 color = Color.blue;
-                color.a = 0.25f;
+                color.a = 0.2f;
                 Gizmos.color = color;
 
-                if (E_pointsTransformedInLocalSpace) Gizmos.DrawSphere(p.prevPosition, 0.2f);
+                if (E_pointsTransformedInLocalSpace) Gizmos.DrawSphere(p.prevPosition, 0.1f);
             }
 
             // Draw Distance Constraints

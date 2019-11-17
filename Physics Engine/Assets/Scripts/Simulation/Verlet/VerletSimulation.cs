@@ -17,7 +17,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     // ===========
     // PUBLIC
     // ===========
-    public int ConstraintIterations;
+    public int ConstraintIterations = 4;
     public List<ParticleObject> ParticleObjects;
 
 

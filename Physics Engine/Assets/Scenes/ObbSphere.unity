@@ -796,6 +796,7 @@ MonoBehaviour:
   dontDestroy: 0
   _dt: 0.02
   _timeScale: 1
+  ConstraintIterations: 0
   ParticleObjects: []
   _stopSimulation: 0
 --- !u!1 &1379738642
@@ -1560,7 +1561,7 @@ PrefabInstance:
     - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
       propertyPath: velocity.y
-      value: -20
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47598f090a8dc5340966bd5d092f0456, type: 3}

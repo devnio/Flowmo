@@ -52,6 +52,7 @@ public class CollisionManager : Singleton<CollisionManager>
 
     public void DetectCollisions()
     {
+        // TODO: Spatial structure.
         int count = Colliders.Count;
         for (int i = 0; i < count; i++)
         {
@@ -254,6 +255,7 @@ public class CollisionManager : Singleton<CollisionManager>
         Vector3 projPoint = this.currentClosestPointOnObb;
 
         this.SeparateParticleObjects(b.GetParticleObject(), projPoint, currPoint);
+        //this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint);
     }
 
     // TODO: Add function for moving particle objects between obb and sphere
