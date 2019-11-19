@@ -241,7 +241,7 @@ public class CollisionManager : Singleton<CollisionManager>
         bool collision = distSphereObbPoint < s.SqrRadius;
         if (collision || sphereInsideObb) this.CollisionResolutionObbSphere(b, s, sphereInsideObb);
 
-        return collision;
+        return collision || sphereInsideObb;
     }
 
     public void CollisionResolutionObbSphere(ColliderBox b, SphereCollider s, bool sphereInsideObb)

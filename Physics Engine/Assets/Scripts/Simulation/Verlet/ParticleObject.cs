@@ -37,9 +37,22 @@ public class ParticleObject : MonoBehaviour
     public DistTuple[] distTuples;
 
     private Vector3 frictionVector;
+    public bool ShowVelocityArrows;
+    private GameObject[] VelocityArrows_DB;
 
     private void Start()
     {
+        // Instantiate debugging arrows
+        if (this.ShowVelocityArrows)
+        {
+            this.VelocityArrows_DB = new GameObject[particles.Length];
+            for (int i = 0; i < particles.Length; i++)
+            {
+                this.VelocityArrows_DB[i] = (GameObject)Instantiate(Resources.Load("VelocityArrow"));
+                this.VelocityArrows_DB[i].SetActive(false);
+            }
+        }
+
         // Check if there is a collider
         if (this.gameObject.GetComponent<BaseCollider>() != null)
         {
@@ -97,8 +110,9 @@ public class ParticleObject : MonoBehaviour
                     Vector3 temp = p.position;
                     p.position += p.position - p.prevPosition + acceleration * dt * dt;
 
-                    p.prevPosition = temp - this.frictionVector;
-                    this.SetFrictionVector(Vector3.zero);
+                    p.prevPosition = temp;
+                        //- this.frictionVector;
+                    //this.SetFrictionVector(Vector3.zero);
 
                     // TODO: do for general surfaces
                     //if (p.position.y < -4.8)
@@ -190,12 +204,16 @@ public class ParticleObject : MonoBehaviour
     {
         float percent = 0f;
         float step = 1f / particles.Length;
+        float maxVelocityParticle_val = float.MinValue;
+        int maxVelocityParticle_idx = 0;
         // Draw Particles and Constraints
         if (particles != null)
         {
             Color color = Color.red;
-            foreach (Particle p in this.particles)
+            for (int i = 0; i < this.particles.Length; i++)
             {
+                Particle p = this.particles[i];
+
                 Vector3 pLocal = p.position;
                 if (!E_pointsTransformedInLocalSpace)
                 {
@@ -215,6 +233,17 @@ public class ParticleObject : MonoBehaviour
                 Gizmos.color = color;
 
                 if (E_pointsTransformedInLocalSpace) Gizmos.DrawSphere(p.prevPosition, 0.1f);
+
+                // Find biggest velocity for normalizing arrows
+                if (this.ShowVelocityArrows)
+                {
+                    float sqrDist = (p.position - p.prevPosition).sqrMagnitude;
+                    if (sqrDist > maxVelocityParticle_val)
+                    {
+                        maxVelocityParticle_val = sqrDist;
+                        maxVelocityParticle_idx = i;
+                    }
+                }
             }
 
             // Draw Distance Constraints
@@ -233,6 +262,31 @@ public class ParticleObject : MonoBehaviour
                     Gizmos.DrawLine(p1Local, p2Local);
                 }
             }
+
+            // Draw velocity arrows
+            if (this.E_pointsTransformedInLocalSpace && this.ShowVelocityArrows)
+            {
+                float maxVel = (this.particles[maxVelocityParticle_idx].position - this.particles[maxVelocityParticle_idx].prevPosition).magnitude;
+
+                for (int i = 0; i < this.particles.Length; i++)
+                {
+                    Particle p = this.particles[i];
+                    Vector3 dir = p.position - p.prevPosition;
+                    float vel = dir.magnitude;
+
+                    if (float.IsNaN(vel) || (maxVel + float.Epsilon >= 0 && maxVel - float.Epsilon <= 0))
+                    {
+                        this.VelocityArrows_DB[i].SetActive(false);
+                        continue;
+                    }
+                    this.VelocityArrows_DB[i].SetActive(true);
+
+                    this.VelocityArrows_DB[i].transform.position = p.position;
+                    this.VelocityArrows_DB[i].transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
+                    this.VelocityArrows_DB[i].transform.localScale = Vector3.one * (vel / maxVel * 0.3f);
+                }
+            }
+
         }
 
         // Draw Center of Mass

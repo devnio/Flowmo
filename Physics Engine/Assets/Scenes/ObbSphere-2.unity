@@ -1062,6 +1062,7 @@ MonoBehaviour:
   - Item1: 2
     Item2: 3
     Item3: -1
+  ShowVelocityArrows: 1
 --- !u!114 &1750258204
 MonoBehaviour:
   m_ObjectHideFlags: 0
