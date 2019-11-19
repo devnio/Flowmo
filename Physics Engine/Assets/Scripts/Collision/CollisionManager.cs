@@ -221,7 +221,7 @@ public class CollisionManager : Singleton<CollisionManager>
 
         for (int i = 0; i < 4; i++)
         {
-            c[i] = (ob.particles[i].position - currPoint).magnitude / sum;
+            c[i] = 1 - ((ob.particles[i].position - currPoint).magnitude / sum);
         }
         return c;
     }
