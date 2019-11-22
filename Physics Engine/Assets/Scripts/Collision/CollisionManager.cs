@@ -263,16 +263,11 @@ public class CollisionManager : Singleton<CollisionManager>
     public void CollisionResolutionObbSphere(ColliderBox b, SphereCollider s, bool sphereInsideObb)
     {
         Vector3 temp = this.currentClosestPointOnObb - s._center;
-        //float mtd = s.Radius - temp.magnitude;
         float dirMult = sphereInsideObb ? -1 : 1; 
         Vector3 dir = temp.normalized * dirMult;
 
         Vector3 currPoint = s._center + dir * s.Radius;
         Vector3 projPoint = this.currentClosestPointOnObb;
-
-        //this.SeparateParticleObjects(b.GetParticleObject(), projPoint, currPoint);
-        //this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint);
-
 
         if (!b.IsStatic() && !s.IsStatic())
         {
