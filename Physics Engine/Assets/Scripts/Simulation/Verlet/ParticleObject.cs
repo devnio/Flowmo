@@ -60,11 +60,6 @@ public class ParticleObject : MonoBehaviour
             this.Collider.AssignParticleObject(this);
         }
 
-        // Add Tetrahederon and Bounding constraints 
-        constraints = new List<Constraint>();
-        constraints.Add(new DistanceConstraint(particles, distTuples));
-        constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
-
         // Initialize prev pos as current one and invmass
         foreach (Particle p in particles) {
             p.position = this.transform.TransformPoint(p.position);
@@ -74,6 +69,11 @@ public class ParticleObject : MonoBehaviour
             // For visualizer
             E_pointsTransformedInLocalSpace = true;
         }
+
+        // Add Tetrahederon and Bounding constraints 
+        constraints = new List<Constraint>();
+        constraints.Add(new DistanceConstraint(particles, distTuples));
+        constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
 
         // Initialize center position
         this.centerOfMass = this.ComputeCenterOfMass();
@@ -109,20 +109,8 @@ public class ParticleObject : MonoBehaviour
                 {
                     Vector3 temp = p.position;
                     p.position += p.position - p.prevPosition + acceleration * dt * dt;
-
                     p.prevPosition = temp;
-                        //- this.frictionVector;
-                    //this.SetFrictionVector(Vector3.zero);
 
-                    // TODO: do for general surfaces
-                    //if (p.position.y < -4.8)
-                    //{
-                    //    p.prevPosition = temp + (p.position - temp).normalized * 0.005f;
-                    //}
-                    //else
-                    //{
-                    //    p.prevPosition = temp;
-                    //}
                 }
                 this.UpdateGameObjectPose(); 
             }
@@ -149,8 +137,10 @@ public class ParticleObject : MonoBehaviour
         this.centerOfMass = ComputeCenterOfMass();
         this.transform.position = this.centerOfMass;
 
+        // bring object to coordinate frame of tetrahedron
         this.UpdateGameObjectOrientation();
 
+        // move collider on spot based on current transform
         this.Collider.UpdateColliderPose(Vector3.zero);
     }
 
@@ -192,7 +182,7 @@ public class ParticleObject : MonoBehaviour
 
         Vector3 dir1 = B - A;
         Vector3 dir2 = C - B;
-        
+
         return Quaternion.LookRotation(dir1, dir2);
     }
 
