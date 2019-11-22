@@ -174,7 +174,7 @@ public class CollisionManager : Singleton<CollisionManager>
     {
         // Update particles to move out
         float[] c1 = this.ComputeParticlesCoefficients(ob1, currPoint);
-        float lambda1 = 1f / (c1[0] * c1[0] + c1[1] * c1[1] + c1[2] * c1[2] + c1[3] * c1[3]);
+        float lambda1 = this.ComputeLambda(c1);
         if (ob2 == null)
         {
             Logger.Instance.DebugInfo("1 Dynamic Sphere", "COLLISION");
@@ -190,7 +190,7 @@ public class CollisionManager : Singleton<CollisionManager>
             // In case both are dynamic have to push them in opposite directions.
             Logger.Instance.DebugInfo("2 Dynamic Spheres", "COLLISION");
             float[] c2 = this.ComputeParticlesCoefficients(ob1, projPoint);
-            float lambda2 = 1f / (c2[0] * c2[0] + c2[1] * c2[1] + c2[2] * c2[2] + c2[3] * c2[3]);
+            float lambda2 = this.ComputeLambda(c2);
 
             // Update the dynamic object
             for (int i = 0; i < 4; i++)
@@ -211,7 +211,7 @@ public class CollisionManager : Singleton<CollisionManager>
     /// <returns></returns>
     private float[] ComputeParticlesCoefficients(ParticleObject ob, Vector3 currPoint)
     {
-        float[] c = new float[4];
+        float[] c = new float[ob.particles.Length];
         float sum = 0;
 
         foreach (Particle p in ob.particles)
@@ -219,11 +219,27 @@ public class CollisionManager : Singleton<CollisionManager>
             sum += (p.position - currPoint).magnitude;
         }
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < c.Length; i++)
         {
             c[i] = 1 - ((ob.particles[i].position - currPoint).magnitude / sum);
         }
         return c;
+    }
+
+    /// <summary>
+    /// Computes the lambda value from the coefficients of the particles (SEE JAKOBSEN paper)
+    /// </summary>
+    /// <param name="c"></param>
+    /// <returns></returns>
+    private float ComputeLambda(float[] c)
+    {
+        float sum = 0f;
+        for (int i = 0; i < c.Length; i++)
+        {
+            sum += c[i] * c[i];
+        }
+
+        return 1f / sum;
     }
 
 
