@@ -270,8 +270,19 @@ public class CollisionManager : Singleton<CollisionManager>
         Vector3 currPoint = s._center + dir * s.Radius;
         Vector3 projPoint = this.currentClosestPointOnObb;
 
-        this.SeparateParticleObjects(b.GetParticleObject(), projPoint, currPoint);
+        //this.SeparateParticleObjects(b.GetParticleObject(), projPoint, currPoint);
         //this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint);
+
+
+        if (!b.IsStatic() && !s.IsStatic())
+        {
+            this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint, b.GetParticleObject());
+        }
+        else
+        {
+            if (!s.IsStatic()) this.SeparateParticleObjects(s.GetParticleObject(), currPoint, projPoint);
+            else if (!b.IsStatic()) this.SeparateParticleObjects(b.GetParticleObject(), projPoint, currPoint);
+        }
     }
 
     // TODO: Add function for moving particle objects between obb and sphere
