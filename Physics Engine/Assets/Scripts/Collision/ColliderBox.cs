@@ -37,7 +37,10 @@ A ------ D'
 
 public class ColliderBox : BaseCollider
 {
+    // Previous cube
+    public Cube prevCube;
     public Cube cube;
+
     [HideInInspector]
 	public Vector3 _xyzLength;
 	public Vector3 xyzLength;
@@ -57,6 +60,7 @@ public class ColliderBox : BaseCollider
 
     public override void UpdateColliderPose(Vector3 displace)
     {
+        this.SavePrevCubeState();
         this.UpdateOBB(displace);
     }
 
@@ -145,6 +149,11 @@ public class ColliderBox : BaseCollider
 		}
 	}
 
+    private void SavePrevCubeState()
+    {
+        this.prevCube = this.cube;
+    }
+
 	/// <summary>
 	/// Use the created AABB and change the orientation to match the one from the game object.
 	/// </summary>
@@ -216,18 +225,4 @@ public class ColliderBox : BaseCollider
             Gizmos.DrawSphere(v, 0.05f);
         }
 	}
-
-	//#if UNITY_EDITOR
-	//    public ColliderBox()
-	//    {
-	//        EditorApplication.hierarchyWindowChanged -= MyHierarchyChangedCallback;
-	//        EditorApplication.hierarchyWindowChanged += MyHierarchyChangedCallback;
-	//    }
-
-	//    private void MyHierarchyChangedCallback()
-	//    {
-	//        UpdateOBB();
-	//    }
-	//#endif
-
 }

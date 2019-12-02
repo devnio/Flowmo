@@ -19,9 +19,11 @@ public class CollisionManager : Singleton<CollisionManager>
     
     // Collision resolution values of current check
     // Be careful to always set these values before using them.
-    // Obb - Obb
+    // Obb - Obb // TODO: place these properties in a struct
     private Vector3 currentMinPenetrationAxis;
     private float currentMinPenetrationDistance;
+    private int currentExtentOfObb; // extent of obb involved in the collision (used before SAT and in resolution)
+    private CollType currentCollType;
 
     // Obb - Sphere
     private Vector3 currentClosestPointOnObb;
@@ -63,9 +65,9 @@ public class CollisionManager : Singleton<CollisionManager>
                 {
                     if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
                     {
-                        Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " + 
-                                                    Colliders[i].Id + " - " + 
-                                                    Colliders[j].Id +" !", 
+                        Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
+                                                    Colliders[i].Id + " - " +
+                                                    Colliders[j].Id + " !",
                                                     "COLLISION_MANAGER");
                     }
                 }
@@ -83,7 +85,7 @@ public class CollisionManager : Singleton<CollisionManager>
                 }
 
                 // OBB vs SPHERE
-                else 
+                else
                 {
                     ColliderBox b = Colliders[i] as ColliderBox;
                     SphereCollider s = Colliders[j] as SphereCollider;
@@ -108,60 +110,6 @@ public class CollisionManager : Singleton<CollisionManager>
             }
         }
     }
-
-    /// <summary>
-    /// Get unique ID form the colliders is used in the CachedSeparatingAxis 
-    /// dictionary to retrieve the separating axis.
-    /// </summary>
-    /// <param name="id1"></param>
-    /// <param name="id2"></param>
-    /// <returns></returns>
-    public int GetCachedSeparatingAxisID(int id1, int id2)
-    {
-        // get sorted values
-        int min = Mathf.Min(id1, id2);
-        int max = Mathf.Max(id1, id2);
-
-        // iterate over 
-        int step = 0;
-        for(int i = 1; i <= min; i++)
-        {
-            step += BaseCollider.GlobalIdCounter - i;
-        }
-        return step - min + max - 1;
-    }
-
-
-    /// <summary>
-    /// Check if the previously detected SA is still a valid SA.
-    /// </summary>
-    /// <param name="b1"></param>
-    /// <param name="b2"></param>
-    /// <param name="ax"></param>
-    /// <returns></returns>
-    public bool CheckPreviousSeparatingAxis(ColliderBox b1, ColliderBox b2)
-    {
-        int cacheId = this.GetCachedSeparatingAxisID(b1.Id, b2.Id);
-
-        // Check if this tuple is already cached
-        if (this.CachedSeparatingAxis.ContainsKey(cacheId))
-        {
-            // Check if the cached axis is still separating the two colliders
-            if (SeparatingAxisCheck(b1, b2, this.CachedSeparatingAxis[cacheId], false))
-            {
-                return true;
-            }
-            else
-            {
-                this.CachedSeparatingAxis.Remove(cacheId);
-                return false;
-            }
-        }
-
-        // No previous cached value
-        return false;
-    }
-
 
     //---------------------------------
     // Collision Methods
@@ -324,10 +272,57 @@ public class CollisionManager : Singleton<CollisionManager>
         }
     }
 
- 
+
     //---------------------------------
     // OBB vs OBB
     //---------------------------------
+    /// <summary>
+    /// Get unique ID form the colliders is used in the CachedSeparatingAxis 
+    /// dictionary to retrieve the separating axis.
+    /// </summary>
+    public int GetCachedSeparatingAxisID(int id1, int id2)
+    {
+        // get sorted values
+        int min = Mathf.Min(id1, id2);
+        int max = Mathf.Max(id1, id2);
+
+        // iterate over 
+        int step = 0;
+        for (int i = 1; i <= min; i++)
+        {
+            step += BaseCollider.GlobalIdCounter - i;
+        }
+        return step - min + max - 1;
+    }
+
+
+    /// <summary>
+    /// Check if the previously detected SA is still a valid SA.
+    /// </summary>
+    public bool CheckPreviousSeparatingAxis(ColliderBox b1, ColliderBox b2)
+    {
+        int cacheId = this.GetCachedSeparatingAxisID(b1.Id, b2.Id);
+
+        // Check if this tuple is already cached
+        if (this.CachedSeparatingAxis.ContainsKey(cacheId))
+        {
+            // Check if the cached axis is still separating the two colliders
+            if (SeparatingAxisCheck(b1, b2, this.CachedSeparatingAxis[cacheId], false))
+            {
+                return true;
+            }
+            else
+            {
+                this.CachedSeparatingAxis.Remove(cacheId);
+                return false;
+            }
+        }
+
+        // No previous cached value
+        return false;
+    }
+
+
     /// <summary>
     /// Checks if there is a separating axis between the two colliders.
     /// Returns true if there is a separating axis (no collision).
@@ -337,7 +332,7 @@ public class CollisionManager : Singleton<CollisionManager>
     /// <param name="cacheColResolution"> When active we store the MTV and MTD. </param>
     /// <param name="ax"></param>
     /// <returns></returns>
-    private bool SeparatingAxisCheck(ColliderBox b1, ColliderBox b2, Vector3 ax, bool cacheAxis=true, bool cacheColResolution = false)
+    private bool SeparatingAxisCheck(ColliderBox b1, ColliderBox b2, Vector3 ax, bool cacheAxis=true, bool cacheColResolution = false, CollType collType = CollType.Vertex)
     {
         if (ax == Vector3.zero) return false;
 
@@ -382,6 +377,7 @@ public class CollisionManager : Singleton<CollisionManager>
             {
                 this.currentMinPenetrationDistance = val;
                 this.currentMinPenetrationAxis = ax;
+                this.currentCollType = collType;
                 Debug.Log("FOUND MIN AXIS");
                 Debug.Log(val);
                 Debug.Log(ax);
@@ -392,11 +388,8 @@ public class CollisionManager : Singleton<CollisionManager>
     }
     
     /// <summary>
-    /// Return true if the colliderboxes are collliding
+    /// Return true if the colliderboxes are colliding
     /// </summary>
-    /// <param name="b1"></param>
-    /// <param name="b2"></param>
-    /// <returns></returns>
     public bool AreOBBsColliding(ColliderBox b1, ColliderBox b2, bool cacheColResponse=false)
     {
         // Return no collision if the previous SA is still valid.
@@ -421,20 +414,22 @@ public class CollisionManager : Singleton<CollisionManager>
         Vector3[] axis = { c1axis1, c1axis2, c1axis3, c2axis1, c2axis2, c2axis3 };
 
         // Check 6 axis from 2 cubes
+        this.currentExtentOfObb = 0;
         foreach (Vector3 ax in axis)
         {
-            if (SeparatingAxisCheck(b1, b2, ax, true, cacheColResponse)) return false;
+            if (SeparatingAxisCheck(b1, b2, ax, true, cacheColResponse, CollType.Vertex)) return false;
+            this.currentExtentOfObb = (this.currentExtentOfObb + 1) % 3;
         }
 
         // Check 9 axis given by cross product between 2 cubes
         for (int i = 0; i < 3; i++)
         {
             Vector3 ax1 = Vector3.Cross(axis[i], axis[3]);
-            if (SeparatingAxisCheck(b1, b2, ax1, true, cacheColResponse)) return false;
+            if (SeparatingAxisCheck(b1, b2, ax1, true, cacheColResponse, CollType.Edge)) return false;
             Vector3 ax2 = Vector3.Cross(axis[i], axis[4]);
-            if (SeparatingAxisCheck(b1, b2, ax2, true, cacheColResponse)) return false;
+            if (SeparatingAxisCheck(b1, b2, ax2, true, cacheColResponse, CollType.Edge)) return false;
             Vector3 ax3 = Vector3.Cross(axis[i], axis[5]);
-            if (SeparatingAxisCheck(b1, b2, ax3, true, cacheColResponse)) return false;
+            if (SeparatingAxisCheck(b1, b2, ax3, true, cacheColResponse, CollType.Edge)) return false;
         }
 
         // Collision Resolution
@@ -447,64 +442,76 @@ public class CollisionManager : Singleton<CollisionManager>
     /// <summary>
     /// If collision happened project the ParticleObject back to prevCenterMass.
     /// </summary>
-    /// <param name="b1"></param>
-    /// <param name="b2"></param>
+    private List<Vector3> DebugSpheresContactObb;
     public void CollisionResolutionOBB(ColliderBox b1, ColliderBox b2)
     {
-        // TODO: for now only try solving between dynamic and static obj.
-        ParticleObject dynamicObj = b1.GetComponent<ParticleObject>();
-        ColliderBox dynamicB = b1;
-        ColliderBox staticB = b2;
-        if (b2.GetComponent<ParticleObject>().objectType == ObjectType.DYNAMIC) {
-            dynamicObj = b2.GetComponent<ParticleObject>();
-            staticB = b1;
-            dynamicB = b2;
-        }
-
         // Find min penetration axis
         AreOBBsColliding(b1, b2, true);
         ShowCurrentSeparatingPlane();
-        // =====
-        //VerletSimulation.Instance.StopSimulation();
-        // =====
 
-        Vector3 currPoint = dynamicObj.centerOfMass;
-        Vector3 projPoint = dynamicObj.centerOfMass + this.currentMinPenetrationAxis.normalized * this.currentMinPenetrationDistance;
+        // TODO: Assume the first object has the particle object (REMOVE THIS ASSUMPTION)
+        // CASE OF VERTEX
+        Logger.Instance.DebugInfo("COLLISION TYPE: " + this.currentCollType);
+        //if (this.currentCollType == CollType.Vertex)
+        //{
+        //    DebugSpheresContactObb = new List<Vector3>();
 
-        // Update particles to move out
-        float[] c = new float[4];
-        float sum = 0;
+        //    Cube currentCube = b1.cube;
+        //    Cube prevCube = b1.prevCube;
 
-        foreach(Particle p in dynamicObj.particles)
+        //    for (int i = 0; i < currentCube.vertices.Length; i++)
+        //    {
+        //        // Plane information (inferred from SAT)
+        //        Vector3 planeNormal = this.currentMinPenetrationAxis;
+
+        //        float extent = b2._xyzLength[this.currentExtentOfObb] / 2;
+        //        float planeDistanceUp = Vector3.Magnitude(b2._center + this.currentMinPenetrationAxis * extent); 
+        //        float planeDistanceDown = Vector3.Magnitude(b2._center + this.currentMinPenetrationAxis * -extent); 
+
+        //        Plane planeUp = new Plane(planeNormal, planeDistanceUp);
+        //        Plane planeDown = new Plane(planeNormal, planeDistanceDown);
+        //        Line line = new Line(prevCube.vertices[i], currentCube.vertices[i]);
+
+        //        Tuple<Point, bool> resultIntersectionUp = Geometry.ClipToPlane(planeUp, line);
+        //        Tuple<Point, bool> resultIntersectionDown = Geometry.ClipToPlane(planeDown, line);
+
+
+        //        if (resultIntersectionUp.Item2)
+        //        {
+        //            Logger.Instance.DebugInfo("LINE INTERSECTED PLANE -> DISPLAY CONTACT POINT (MAGENTA)");
+        //            // TODO: this position shouldn't be used -> if an intersection happens we find out which vertex has intersected
+        //            // then we have to use this vertex with (this.currentMinPenetrationAxis, this.currentMinPenetrationDistance)
+        //            DebugSpheresContactObb.Add(resultIntersectionUp.Item1.p);
+        //        }
+        //        if (resultIntersectionDown.Item2)
+        //        {
+        //            Logger.Instance.DebugInfo("LINE INTERSECTED PLANE -> DISPLAY CONTACT POINT (MAGENTA)");
+        //            // TODO: this position shouldn't be used -> if an intersection happens we find out which vertex has intersected
+        //            // then we have to use this vertex with (this.currentMinPenetrationAxis, this.currentMinPenetrationDistance)
+        //            DebugSpheresContactObb.Add(resultIntersectionDown.Item1.p);
+        //        }
+        //    }
+        //}
+
+        // TODO: ABOVE STEP Too slow: instead -> when searching for min axis and min distance [AreOBBsColliding(b1, b2, true);]
+        // -> try also to find the closest vertex to the plane/cube -> and then use that vertex to project our using the min axis/distance.
+
+        Vector3 currPoint = b1._center;
+        Vector3 projPoint = b1._center + this.currentMinPenetrationAxis.normalized * this.currentMinPenetrationDistance;
+
+        if (!b1.IsStatic() && !b2.IsStatic())
         {
-            sum += (p.position - currPoint).magnitude;
+            this.SeparateParticleObjects(b1.GetParticleObject(), currPoint, projPoint, b2.GetParticleObject());
         }
-
-        for (int i = 0; i < 4; i++)
+        else
         {
-            c[i] = (dynamicObj.particles[i].position - currPoint).magnitude / sum;
-        }
-
-        Logger.Instance.DebugInfo("C1: " + c[0] + ", C2: " + c[1] + ", C3: " + c[2] + ", C3: " + c[3], "C1-C4");
-        Logger.Instance.DebugInfo((c[0] + c[1] + c[2] + c[3]).ToString(), "SUM C1-C4");
-        Logger.Instance.DebugInfo(currPoint.ToString(), "CURRENTE POINT: P ");
-        Vector3 linearComb = c[0] * dynamicObj.particles[0].position
-            + c[1] * dynamicObj.particles[1].position
-            + c[2] * dynamicObj.particles[2].position
-            + c[3] * dynamicObj.particles[3].position;
-        Logger.Instance.DebugInfo(linearComb.ToString(), "LINEAR COMB P=C1X1 + C2X2 + C3X3 + C4X4 = ");
-
-
-        float lambda = 1f / (c[0] * c[0] + c[1] * c[1] + c[2] * c[2] + c[3] * c[3]);
-
-        for (int i = 0; i < 4; i++)
-        {
-            dynamicObj.particles[i].position = dynamicObj.particles[i].position + lambda * c[i] * (projPoint - currPoint);
+            if (!b1.IsStatic()) this.SeparateParticleObjects(b1.GetParticleObject(), currPoint, projPoint);
+            else if (!b2.IsStatic()) this.SeparateParticleObjects(b2.GetParticleObject(), projPoint, currPoint);
         }
 
         Logger.Instance.DebugInfo("Updated particles, min axis dist: " + this.currentMinPenetrationDistance + ", min axis: " + this.currentMinPenetrationAxis, "INFO COLLISION RESOLUTION");
-        Debug.Log(this.currentMinPenetrationDistance);
-        Debug.Log(this.currentMinPenetrationAxis);
+        Logger.Instance.DebugInfo(this.currentMinPenetrationDistance.ToString());
+        Logger.Instance.DebugInfo(this.currentMinPenetrationAxis.ToString());
     }
 
     //---------------------------------
@@ -523,5 +530,21 @@ public class CollisionManager : Singleton<CollisionManager>
         Gizmos.color = col;
 
         Gizmos.DrawSphere(this.currentClosestPointOnObb, 0.3f);
+
+        if (DebugSpheresContactObb != null)
+        {
+            col = Color.magenta;
+            col.a = 0.7f;
+            foreach (Vector3 v in DebugSpheresContactObb)
+            {
+                Gizmos.DrawSphere(v, 0.03f);
+            }
+        }
     }
+}
+
+public enum CollType
+{
+    Vertex,
+    Edge
 }
