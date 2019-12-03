@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.42101374, g: 0.714805, b: 0.8810152, a: 1}
+  m_IndirectSpecularColor: {r: 0.4208909, g: 0.71482235, b: 0.8809126, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -819,7 +819,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1607506964}
   m_LocalRotation: {x: -0.5623253, y: 0.5726712, z: -0.5891067, w: 0.09376198}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalPosition: {x: -0.01, y: 1.978, z: 0.016}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2005486243}
@@ -838,13 +838,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prevCenterOfMass: {x: 0, y: 0, z: 0}
-  centerOfMass: {x: 0, y: 2, z: 0.000000014901161}
+  centerOfMass: {x: 0, y: 0, z: 0}
   Collider: {fileID: 0}
   integrateThisFrame: 1
   objectType: 0
   UseGravity: 1
   acceleration: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 2, z: 0}
   particles:
   - position: {x: -0.5, y: -0.5, z: -0.5}
     prevPosition: {x: 0, y: 0, z: 0}
@@ -894,7 +894,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f83867c49ee6d4fbfaeb2c1ded10ef74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _center: {x: 0, y: 2, z: 0}
+  _center: {x: -0.01, y: 1.978, z: 0.016}
   displaceCenter: {x: 0, y: 0, z: 0}
   _xyzLength: {x: 1, y: 1, z: 1}
   xyzLength: {x: 1, y: 1, z: 1}
@@ -1001,7 +1001,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1750258201}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 3.554, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2005486243}
@@ -1076,7 +1076,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f83867c49ee6d4fbfaeb2c1ded10ef74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _center: {x: 0, y: 0, z: 0}
+  _center: {x: 0, y: 3.554, z: 0}
   displaceCenter: {x: 0, y: 0, z: 0}
   _xyzLength: {x: 1, y: 1, z: 1}
   xyzLength: {x: 1, y: 1, z: 1}

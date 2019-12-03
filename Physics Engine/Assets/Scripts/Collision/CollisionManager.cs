@@ -16,13 +16,12 @@ public class CollisionManager : Singleton<CollisionManager>
     //---------------------------------
     public List<BaseCollider> Colliders;
     public Dictionary<int, Vector3> CachedSeparatingAxis;
-    
+
     // Collision resolution values of current check
     // Be careful to always set these values before using them.
     // Obb - Obb // TODO: place these properties in a struct
     private Vector3 currentMinPenetrationAxis;
     private float currentMinPenetrationDistance;
-    private int currentExtentOfObb; // extent of obb involved in the collision (used before SAT and in resolution)
     private CollType currentCollType;
 
     // Obb - Sphere
@@ -211,7 +210,7 @@ public class CollisionManager : Singleton<CollisionManager>
     public void CollisionResolutionObbSphere(ColliderBox b, SphereCollider s, bool sphereInsideObb)
     {
         Vector3 temp = this.currentClosestPointOnObb - s._center;
-        float dirMult = sphereInsideObb ? -1 : 1; 
+        float dirMult = sphereInsideObb ? -1 : 1;
         Vector3 dir = temp.normalized * dirMult;
 
         Vector3 currPoint = s._center + dir * s.Radius;
@@ -332,11 +331,13 @@ public class CollisionManager : Singleton<CollisionManager>
     /// <param name="cacheColResolution"> When active we store the MTV and MTD. </param>
     /// <param name="ax"></param>
     /// <returns></returns>
-    private bool SeparatingAxisCheck(ColliderBox b1, ColliderBox b2, Vector3 ax, bool cacheAxis=true, bool cacheColResolution = false, CollType collType = CollType.Vertex)
+    private bool SeparatingAxisCheck(ColliderBox b1, ColliderBox b2, Vector3 ax, bool cacheAxis = true, bool cacheColResolution = false, CollType collType = CollType.Vertex)
     {
         if (ax == Vector3.zero) return false;
 
-        ax.Normalize();
+        Vector3 axis = ax;
+
+        axis.Normalize();
 
         Cube c1 = b1.cube;
         Cube c2 = b2.cube;
@@ -346,17 +347,46 @@ public class CollisionManager : Singleton<CollisionManager>
         float c2Max = float.MinValue;
         float c2Min = float.MaxValue;
 
+        // TODO: only testing something
+        int c1_idx_max = 0;
+        int c1_idx_min = 0;
+        int c2_idx_max = 0;
+        int c2_idx_min = 0;
+
+        // Assume b1 is more positive on the axis than b2
+        if (Vector3.Dot(b1._center - b2._center, axis) < 0f) axis *= -1;
+
         // Project points from cubes to ax. Find extreme points in the axis.
         for (int i = 0; i < 8; i++)
         {
             // Project point to axis;
-            float c1Proj = Vector3.Dot(c1.vertices[i], ax);
-            float c2Proj = Vector3.Dot(c2.vertices[i], ax);
+            float c1Proj = Vector3.Dot(c1.vertices[i], axis);
+            float c2Proj = Vector3.Dot(c2.vertices[i], axis);
 
-            c1Max = Mathf.Max(c1Max, c1Proj);
-            c1Min = Mathf.Min(c1Min, c1Proj);
-            c2Max = Mathf.Max(c2Max, c2Proj);
-            c2Min = Mathf.Min(c2Min, c2Proj);
+            if (c1Max < c1Proj)
+            {
+                c1Max = c1Proj;
+                c1_idx_max = i;
+            }
+            if (c1Min > c1Proj)
+            {
+                c1Min = c1Proj;
+                c1_idx_min = i;
+            }
+            if (c2Max < c2Proj)
+            {
+                c2Max = c2Proj;
+                c2_idx_max = i;
+            }
+            if (c2Min > c2Proj)
+            {
+                c2Min = c2Proj;
+                c2_idx_min = i;
+            }
+            //c1Max = Mathf.Max(c1Max, c1Proj);
+            //c1Min = Mathf.Min(c1Min, c1Proj);
+            //c2Max = Mathf.Max(c2Max, c2Proj);
+            //c2Min = Mathf.Min(c2Min, c2Proj);
         }
 
         var max = Mathf.Max(c1Max, c2Max);
@@ -367,30 +397,36 @@ public class CollisionManager : Singleton<CollisionManager>
 
         bool noCollision = longSpan > overlapSpan;
         // if no collision happened (found a separating axis) cache the separating axis
-        if (noCollision && cacheAxis && !cacheColResolution) CachedSeparatingAxis.Add(GetCachedSeparatingAxisID(b1.Id, b2.Id), ax); 
+        if (noCollision && cacheAxis && !cacheColResolution) CachedSeparatingAxis.Add(GetCachedSeparatingAxisID(b1.Id, b2.Id), axis);
 
         // we already know a collision happened and try to find min penetration axis for projection
         if (cacheColResolution && !noCollision)
         {
             float val = overlapSpan - longSpan;
-            if (val >= 0 && val < this.currentMinPenetrationDistance && ax != Vector3.zero)
+            if (val >= 0 && val < this.currentMinPenetrationDistance && axis != Vector3.zero)
             {
+                // TODO: this is only testing 
+                // //===
+                DebugSpheresContactObb = new List<Vector3>();
+                DebugSpheresContactObb.Add(c1.vertices[c1_idx_min]);
+                // ===//
+
                 this.currentMinPenetrationDistance = val;
-                this.currentMinPenetrationAxis = ax;
+                this.currentMinPenetrationAxis = axis;
                 this.currentCollType = collType;
                 Debug.Log("FOUND MIN AXIS");
                 Debug.Log(val);
-                Debug.Log(ax);
+                Debug.Log(axis);
             }
         }
 
         return noCollision;
     }
-    
+
     /// <summary>
     /// Return true if the colliderboxes are colliding
     /// </summary>
-    public bool AreOBBsColliding(ColliderBox b1, ColliderBox b2, bool cacheColResponse=false)
+    public bool AreOBBsColliding(ColliderBox b1, ColliderBox b2, bool cacheColResponse = false)
     {
         // Return no collision if the previous SA is still valid.
         if (CheckPreviousSeparatingAxis(b1, b2)) return false;
@@ -414,11 +450,9 @@ public class CollisionManager : Singleton<CollisionManager>
         Vector3[] axis = { c1axis1, c1axis2, c1axis3, c2axis1, c2axis2, c2axis3 };
 
         // Check 6 axis from 2 cubes
-        this.currentExtentOfObb = 0;
         foreach (Vector3 ax in axis)
         {
             if (SeparatingAxisCheck(b1, b2, ax, true, cacheColResponse, CollType.Vertex)) return false;
-            this.currentExtentOfObb = (this.currentExtentOfObb + 1) % 3;
         }
 
         // Check 9 axis given by cross product between 2 cubes
@@ -452,46 +486,11 @@ public class CollisionManager : Singleton<CollisionManager>
         // TODO: Assume the first object has the particle object (REMOVE THIS ASSUMPTION)
         // CASE OF VERTEX
         Logger.Instance.DebugInfo("COLLISION TYPE: " + this.currentCollType);
-        //if (this.currentCollType == CollType.Vertex)
-        //{
-        //    DebugSpheresContactObb = new List<Vector3>();
+        if (this.currentCollType == CollType.Vertex)
+        {
 
-        //    Cube currentCube = b1.cube;
-        //    Cube prevCube = b1.prevCube;
+        }
 
-        //    for (int i = 0; i < currentCube.vertices.Length; i++)
-        //    {
-        //        // Plane information (inferred from SAT)
-        //        Vector3 planeNormal = this.currentMinPenetrationAxis;
-
-        //        float extent = b2._xyzLength[this.currentExtentOfObb] / 2;
-        //        float planeDistanceUp = Vector3.Magnitude(b2._center + this.currentMinPenetrationAxis * extent); 
-        //        float planeDistanceDown = Vector3.Magnitude(b2._center + this.currentMinPenetrationAxis * -extent); 
-
-        //        Plane planeUp = new Plane(planeNormal, planeDistanceUp);
-        //        Plane planeDown = new Plane(planeNormal, planeDistanceDown);
-        //        Line line = new Line(prevCube.vertices[i], currentCube.vertices[i]);
-
-        //        Tuple<Point, bool> resultIntersectionUp = Geometry.ClipToPlane(planeUp, line);
-        //        Tuple<Point, bool> resultIntersectionDown = Geometry.ClipToPlane(planeDown, line);
-
-
-        //        if (resultIntersectionUp.Item2)
-        //        {
-        //            Logger.Instance.DebugInfo("LINE INTERSECTED PLANE -> DISPLAY CONTACT POINT (MAGENTA)");
-        //            // TODO: this position shouldn't be used -> if an intersection happens we find out which vertex has intersected
-        //            // then we have to use this vertex with (this.currentMinPenetrationAxis, this.currentMinPenetrationDistance)
-        //            DebugSpheresContactObb.Add(resultIntersectionUp.Item1.p);
-        //        }
-        //        if (resultIntersectionDown.Item2)
-        //        {
-        //            Logger.Instance.DebugInfo("LINE INTERSECTED PLANE -> DISPLAY CONTACT POINT (MAGENTA)");
-        //            // TODO: this position shouldn't be used -> if an intersection happens we find out which vertex has intersected
-        //            // then we have to use this vertex with (this.currentMinPenetrationAxis, this.currentMinPenetrationDistance)
-        //            DebugSpheresContactObb.Add(resultIntersectionDown.Item1.p);
-        //        }
-        //    }
-        //}
 
         // TODO: ABOVE STEP Too slow: instead -> when searching for min axis and min distance [AreOBBsColliding(b1, b2, true);]
         // -> try also to find the closest vertex to the plane/cube -> and then use that vertex to project our using the min axis/distance.
