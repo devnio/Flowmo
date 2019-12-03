@@ -159,7 +159,7 @@ public class CollisionManager : Singleton<CollisionManager>
     /// This method should not be used for more than 4 particles.
     /// </summary>
     private float[] ComputeParticlesCoefficients(ParticleObject ob, Vector3 currPoint)
-    {
+    { 
         int numOfParticles = ob.particles.Length;
         float[] c = new float[numOfParticles];
         Decimal[,] matrix = new Decimal[4, numOfParticles];
