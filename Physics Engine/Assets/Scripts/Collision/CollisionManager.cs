@@ -1,6 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Accord.Math;
+
+using Vector3 = UnityEngine.Vector3;
 
 public class CollisionManager : Singleton<CollisionManager>
 {
@@ -158,18 +162,33 @@ public class CollisionManager : Singleton<CollisionManager>
     /// <returns></returns>
     private float[] ComputeParticlesCoefficients(ParticleObject ob, Vector3 currPoint)
     {
-        float[] c = new float[ob.particles.Length];
+        int numOfParticles = ob.particles.Length;
+        float[] c = new float[numOfParticles];
         float sum = 0;
 
-        foreach (Particle p in ob.particles)
+        Decimal[,] matrix = new Decimal[3, numOfParticles];
+        Debug.Log("======= COMPUTING PARTICLE COEFFICIENTS =======");
+        for (int j = 0; j < numOfParticles; j++)
         {
-            sum += (p.position - currPoint).magnitude;
+            Particle p = ob.particles[j];
+            matrix[0, j] = (Decimal)p.position.x;
+            matrix[1, j] = (Decimal)p.position.y;
+            matrix[2, j] = (Decimal)p.position.z;
+
+            Debug.Log(p.position);
         }
 
-        for (int i = 0; i < c.Length; i++)
-        {
-            c[i] = 1 - ((ob.particles[i].position - currPoint).magnitude / sum);
-        }
+        Logger.Instance.PrintMatrix(matrix);
+
+        //foreach (Particle p in ob.particles)
+        //{
+        //    sum += (p.position - currPoint).magnitude;
+        //}
+
+        //for (int i = 0; i < c.Length; i++)
+        //{
+        //    c[i] = 1 - ((ob.particles[i].position - currPoint).magnitude / sum);
+        //}
         return c;
     }
 
@@ -495,8 +514,8 @@ public class CollisionManager : Singleton<CollisionManager>
         // TODO: ABOVE STEP Too slow: instead -> when searching for min axis and min distance [AreOBBsColliding(b1, b2, true);]
         // -> try also to find the closest vertex to the plane/cube -> and then use that vertex to project our using the min axis/distance.
 
-        Vector3 currPoint = b1._center;
-        Vector3 projPoint = b1._center + this.currentMinPenetrationAxis.normalized * this.currentMinPenetrationDistance;
+        Vector3 currPoint = DebugSpheresContactObb[0];
+        Vector3 projPoint = currPoint + this.currentMinPenetrationAxis.normalized * this.currentMinPenetrationDistance;
 
         if (!b1.IsStatic() && !b2.IsStatic())
         {

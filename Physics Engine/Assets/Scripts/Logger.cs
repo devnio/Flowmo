@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -53,6 +54,22 @@ public class Logger : Singleton<Logger>
         }
 
         text += "SUM = " + sum.ToString() + "| \n";
+        Debug.Log(text);
+    }
+
+    public void PrintMatrix(Decimal[,] matrix)
+    {
+        string text = "MATRIX: \n";
+        // Assuem 3x4
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                text += matrix[i, j];
+                text += "  ";
+            }
+            text += "\n";
+        }
         Debug.Log(text);
     }
 }
