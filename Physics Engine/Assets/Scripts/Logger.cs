@@ -33,43 +33,52 @@ public class Logger : Singleton<Logger>
     /// <param name="title"></param>
     public void DebugTuples(Tuple<int, int, float>[] tuples, string title = "")
     {
-        Debug.Log(title + ": ");
-        foreach(var tup in tuples)
+        if (DebugInfoActive)
         {
-            Debug.Log("(" + tup.Item1 + ", " + tup.Item2 + ") : " + tup.Item3 + "\n");
+            Debug.Log(title + ": ");
+            foreach (var tup in tuples)
+            {
+                Debug.Log("(" + tup.Item1 + ", " + tup.Item2 + ") : " + tup.Item3 + "\n");
+            }
         }
     }
 
     public void DebugParticleCoefficients(Vector3 currPoint, float[] coeffs, string title = "")
     {
-        string text = title + ": |";
-        text += "COEFFS FORM CURR POINT : " + currPoint.ToString() + "\n";
-
-        float sum = 0f;
-        for (int i = 0; i < coeffs.Length; i++)
+        if (DebugInfoActive)
         {
-            text += "c[" + i.ToString() + "] = " + coeffs[i];
-            sum += coeffs[i];
-            text += ", ";
-        }
+            string text = title + ": |";
+            text += "COEFFS FORM CURR POINT : " + currPoint.ToString() + "\n";
 
-        text += "SUM = " + sum.ToString() + "| \n";
-        Debug.Log(text);
+            float sum = 0f;
+            for (int i = 0; i < coeffs.Length; i++)
+            {
+                text += "c[" + i.ToString() + "] = " + coeffs[i];
+                sum += coeffs[i];
+                text += ", ";
+            }
+
+            text += "SUM = " + sum.ToString() + "| \n";
+            Debug.Log(text);
+        }
     }
 
-    public void PrintMatrix(Decimal[,] matrix)
+    public void PrintMatrix(Decimal[,] matrix, int rows, int cols, string title="")
     {
-        string text = "MATRIX: \n";
-        // Assuem 3x4
-        for (int i = 0; i < 3; i++)
+        if (DebugInfoActive)
         {
-            for (int j = 0; j < 4; j++)
+            string text = "MATRIX " + title + "  \n";
+            // Assuem 3x4
+            for (int i = 0; i < rows; i++)
             {
-                text += matrix[i, j];
-                text += "  ";
+                for (int j = 0; j < cols; j++)
+                {
+                    text += matrix[i, j];
+                    text += "  ";
+                }
+                text += "\n";
             }
-            text += "\n";
+            Debug.Log(text);
         }
-        Debug.Log(text);
     }
 }

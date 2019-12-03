@@ -156,38 +156,45 @@ public class CollisionManager : Singleton<CollisionManager>
 
     /// <summary>
     /// Compute coefficients to use for moving the particles (SEE JAKOBSEN paper).
+    /// This method should not be used for more than 4 particles.
     /// </summary>
-    /// <param name="ob"></param>
-    /// <param name="currPoint"></param>
-    /// <returns></returns>
     private float[] ComputeParticlesCoefficients(ParticleObject ob, Vector3 currPoint)
     {
         int numOfParticles = ob.particles.Length;
         float[] c = new float[numOfParticles];
-        float sum = 0;
+        Decimal[,] matrix = new Decimal[4, numOfParticles];
 
-        Decimal[,] matrix = new Decimal[3, numOfParticles];
-        Debug.Log("======= COMPUTING PARTICLE COEFFICIENTS =======");
         for (int j = 0; j < numOfParticles; j++)
         {
             Particle p = ob.particles[j];
             matrix[0, j] = (Decimal)p.position.x;
             matrix[1, j] = (Decimal)p.position.y;
             matrix[2, j] = (Decimal)p.position.z;
+            matrix[3, j] = (Decimal)1;
+        }
+        //Logger.Instance.PrintMatrix(matrix, 4, 4);
 
-            Debug.Log(p.position);
+        Decimal[,] rhs = { { (Decimal)currPoint.x }, { (Decimal)currPoint.y }, { (Decimal)currPoint.z }, { (Decimal)1 } };
+        //Logger.Instance.PrintMatrix(rhs, 4, 1, " RHS");
+
+        Decimal[,] x = Matrix.Solve(matrix, rhs);
+        //Logger.Instance.PrintMatrix(x, 4, 1, "RESULT x");
+
+        for (int i = 0; i < 4; i++)
+        {
+            c[i] = (float)x[i, 0];
         }
 
-        Logger.Instance.PrintMatrix(matrix);
-
-        //foreach (Particle p in ob.particles)
+        // HACK: Faster but not accurate.
+        //float maxDist = (ob.particles[0].position - currPoint).magnitude;
+        //for (int i = 1; i < numOfParticles; i++)
         //{
-        //    sum += (p.position - currPoint).magnitude;
+        //    maxDist = Mathf.Max(maxDist, (ob.particles[i].position - currPoint).magnitude);
         //}
 
         //for (int i = 0; i < c.Length; i++)
         //{
-        //    c[i] = 1 - ((ob.particles[i].position - currPoint).magnitude / sum);
+        //    c[i] = 1 - ((ob.particles[i].position - currPoint).magnitude / maxDist);
         //}
         return c;
     }

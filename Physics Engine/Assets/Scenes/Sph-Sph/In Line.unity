@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.42101374, g: 0.714805, b: 0.8810152, a: 1}
+  m_IndirectSpecularColor: {r: 0.4208909, g: 0.71482235, b: 0.8809126, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -576,6 +576,7 @@ MonoBehaviour:
   _center: {x: 0, y: -6.75, z: 0.78}
   displaceCenter: {x: 0, y: 0, z: 0}
   Radius: 5
+  SqrRadius: 0
 --- !u!23 &536321550
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -638,7 +639,7 @@ MonoBehaviour:
   Collider: {fileID: 0}
   integrateThisFrame: 1
   objectType: 0
-  gravityAcceleraiton: {x: 0, y: 0, z: 0}
+  UseGravity: 1
   acceleration: {x: 5, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   particles:
@@ -677,6 +678,7 @@ MonoBehaviour:
   - Item1: 2
     Item2: 3
     Item3: -1
+  ShowVelocityArrows: 0
 --- !u!1 &548784792
 GameObject:
   m_ObjectHideFlags: 0
@@ -1077,8 +1079,9 @@ MonoBehaviour:
   dontDestroy: 0
   _dt: 0.02
   _timeScale: 1
+  ConstraintIterations: 4
   ParticleObjects: []
-  _stopSimulation: 0
+  _stopSimulation: 1
 --- !u!1 &1379738642
 GameObject:
   m_ObjectHideFlags: 0
@@ -1303,11 +1306,12 @@ MonoBehaviour:
   Collider: {fileID: 0}
   integrateThisFrame: 0
   objectType: 1
-  gravityAcceleraiton: {x: 0, y: 0, z: 0}
+  UseGravity: 1
   acceleration: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   particles: []
   distTuples: []
+  ShowVelocityArrows: 0
 --- !u!114 &1750258204
 MonoBehaviour:
   m_ObjectHideFlags: 0
