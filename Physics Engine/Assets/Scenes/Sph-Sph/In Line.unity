@@ -291,7 +291,7 @@ PrefabInstance:
     - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
       propertyPath: velocity.z
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
@@ -989,7 +989,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroy: 0
-  DebugInfoActive: 1
+  DebugInfoActive: 0
 --- !u!4 &921401150
 Transform:
   m_ObjectHideFlags: 0
@@ -1852,7 +1852,7 @@ PrefabInstance:
     - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
       propertyPath: velocity.z
-      value: -4
+      value: -5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47598f090a8dc5340966bd5d092f0456, type: 3}

@@ -1229,7 +1229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroy: 0
-  DebugInfoActive: 1
+  DebugInfoActive: 0
 --- !u!4 &921401150
 Transform:
   m_ObjectHideFlags: 0

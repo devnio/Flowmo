@@ -162,22 +162,22 @@ public class CollisionManager : Singleton<CollisionManager>
     { 
         int numOfParticles = ob.particles.Length;
         float[] c = new float[numOfParticles];
-        Decimal[,] matrix = new Decimal[4, numOfParticles];
+        double[,] matrix = new double[4, numOfParticles];
 
         for (int j = 0; j < numOfParticles; j++)
         {
             Particle p = ob.particles[j];
-            matrix[0, j] = (Decimal)p.position.x;
-            matrix[1, j] = (Decimal)p.position.y;
-            matrix[2, j] = (Decimal)p.position.z;
-            matrix[3, j] = (Decimal)1;
+            matrix[0, j] = (double)p.position.x;
+            matrix[1, j] = (double)p.position.y;
+            matrix[2, j] = (double)p.position.z;
+            matrix[3, j] = (double)1;
         }
         //Logger.Instance.PrintMatrix(matrix, 4, 4);
 
-        Decimal[,] rhs = { { (Decimal)currPoint.x }, { (Decimal)currPoint.y }, { (Decimal)currPoint.z }, { (Decimal)1 } };
+        double[,] rhs = { { (double)currPoint.x }, { (double)currPoint.y }, { (double)currPoint.z }, { (double)1 } };
         //Logger.Instance.PrintMatrix(rhs, 4, 1, " RHS");
 
-        Decimal[,] x = Matrix.Solve(matrix, rhs);
+        double[,] x = Matrix.Solve(matrix, rhs);
         //Logger.Instance.PrintMatrix(x, 4, 1, "RESULT x");
 
         for (int i = 0; i < 4; i++)

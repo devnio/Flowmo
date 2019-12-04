@@ -63,12 +63,11 @@ public class Logger : Singleton<Logger>
         }
     }
 
-    public void PrintMatrix(Decimal[,] matrix, int rows, int cols, string title="")
+    public void PrintMatrix(double[,] matrix, int rows, int cols, string title="")
     {
         if (DebugInfoActive)
         {
             string text = "MATRIX " + title + "  \n";
-            // Assuem 3x4
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
