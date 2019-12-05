@@ -111,9 +111,9 @@ public class Octree<TType>
     {
         int index = 0;
 
-        index |= lookupPosition.y > nodePosition.y ? 4 : 0;
-        index |= lookupPosition.x > nodePosition.x ? 2 : 0;
-        index |= lookupPosition.z > nodePosition.z ? 1 : 0;
+        index |= lookupPosition.y > nodePosition.y ? 4 : 0;  // set the flag for y
+        index |= lookupPosition.x > nodePosition.x ? 2 : 0;  // set the flag for x
+        index |= lookupPosition.z > nodePosition.z ? 1 : 0;  // set the flag for z
 
         return index;
     }
@@ -122,8 +122,6 @@ public class Octree<TType>
     /// <summary>
     /// Check where this vertex should be allocated.
     /// </summary>
-    /// <param name="lookupPosition"></param>
-    /// <param name=""></param>
     public void UpdateNodePosition(Vector3 vertexPosition, BaseCollider baseCollider)
     {
         //node.
@@ -142,8 +140,10 @@ public class Octree<TType>
         // (2) Once the Node is found
         // (2.1) Check where this basecollider was stored previously 
         // (2.2) if it isn't stored in the current node add the BaseCollider to its IList
-        
 
+        // PROBLEM: an object (cube/sphere) can be inside multiple nodes
+        //          checking only the extents isn't enough, because it might extend
+        //          through multiple nodes (should use ray coverage?)
     }
 
     public OctreeNode<TType> GetRoot()
