@@ -19,9 +19,10 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     // ===========
     public int ConstraintIterations = 4;
     public List<ParticleObject> ParticleObjects;
+    public List<SoftBody> SoftBodyObjects;
 
 
-	private void Update()
+    private void Update()
 	{
 		if ((Time.time >= passedTime + _dt) && !_stopSimulation)
 		{
@@ -41,7 +42,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         UpdateParticles(dt);
 
         // Detect Collisions
-        CollisionManager.Instance.DetectCollisions();
+        //CollisionManager.Instance.DetectCollisions();
 
         // Satisfy Constraints
         SatisfyConstraints(this.ConstraintIterations);
@@ -52,6 +53,11 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         foreach (ParticleObject pb in ParticleObjects)
         {
             pb.UpdateStep(dt);
+        }
+
+        foreach(SoftBody sb in SoftBodyObjects)
+        {
+            sb.UpdateStep(dt);
         }
     }
 
@@ -64,6 +70,14 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
                 pb.SatisfyConstraints();
             }
             pb.UpdateGameObjectPose();
+        }
+
+        foreach(SoftBody sb in SoftBodyObjects)
+        {
+            for (int i = 0; i < iterations; i++)
+            {
+                sb.SatisfyConstraints();
+            }
         }
     }
 
@@ -78,6 +92,17 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
             ParticleObjects = new List<ParticleObject>();
         }
         ParticleObjects.Add(pObject);
+
+        Logger.Instance.DebugInfo("Added a particle object!");
+    }
+
+    public void AddSoftBody(SoftBody sbObject)
+    {
+        if (SoftBodyObjects == null)
+        {
+            SoftBodyObjects = new List<SoftBody>();
+        }
+        SoftBodyObjects.Add(sbObject);
 
         Logger.Instance.DebugInfo("Added a particle object!");
     }

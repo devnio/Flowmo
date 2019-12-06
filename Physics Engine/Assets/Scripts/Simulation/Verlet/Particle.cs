@@ -5,6 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class Particle
 {
+
     public Vector3 position;
     [HideInInspector]
     public Vector3 prevPosition;
@@ -12,4 +13,11 @@ public class Particle
     public float invMass;
 
     public float mass = 1f;
+
+    public Particle(Vector3 position, float mass)
+    {
+        this.position = position;
+        this.prevPosition = position;
+        this.invMass = 1f / mass;
+    }
 }

@@ -46,9 +46,13 @@ public class DistanceConstraint : Constraint
             Vector3 delta = p2.position - p1.position;
             float deltaLen = delta.magnitude;
 
+            // SAFETY CHECK 
+            if (Util.CMP(deltaLen, 0f) || float.IsNaN(deltaLen)) continue;
+
             float diff = (deltaLen - distConst) / (deltaLen * (p1.invMass + p2.invMass));
-            p1.position += delta * 0.5f * diff;
-            p2.position -= delta * 0.5f * diff;
+            float w = 0.01f;
+            p1.position += delta * 0.5f * diff * w;
+            p2.position -= delta * 0.5f * diff * w;
         }
     }
 }

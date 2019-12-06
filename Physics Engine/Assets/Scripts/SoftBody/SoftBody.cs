@@ -3,17 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public enum ObjectType
+public class SoftBody : MonoBehaviour
 {
-    DYNAMIC,
-    KINEMATIC
-}
-
-public class ParticleObject : MonoBehaviour
-{
-    // Take direction of 2 particles and use for orienting
-    private Quaternion tetraCoordinateFrame;
-    private Quaternion initialOrientation;
 
     [HideInInspector]
     public Vector3 prevCenterOfMass; // used for the collision point q (the one to shift towards)
@@ -21,12 +12,8 @@ public class ParticleObject : MonoBehaviour
     public Vector3 centerOfMass;
     [HideInInspector]
     public BaseCollider Collider;
-    [HideInInspector]
-    public bool integrateThisFrame = true;
 
     public List<Constraint> constraints;
-
-    public ObjectType objectType;
 
     private Vector3 gravityAcceleraiton;
     public bool UseGravity = true;
@@ -36,12 +23,20 @@ public class ParticleObject : MonoBehaviour
     public Particle[] particles; // relative to center of mass
     public DistTuple[] distTuples;
 
-    private Vector3 frictionVector;
     public bool ShowVelocityArrows;
     private GameObject[] VelocityArrows_DB;
 
+    private MeshFilter meshFilter;
+    private Mesh mesh;
+
     private void Start()
     {
+        this.meshFilter = this.GetComponent<MeshFilter>();
+        this.mesh = this.meshFilter.mesh;
+        this.mesh.MarkDynamic();
+
+        this.CreateParticlesAndConstraints();
+
         // Instantiate debugging arrows
         if (this.ShowVelocityArrows)
         {
@@ -53,34 +48,16 @@ public class ParticleObject : MonoBehaviour
             }
         }
 
-        // Check if there is a collider
-        if (this.gameObject.GetComponent<BaseCollider>() != null)
-        {
-            this.Collider = this.gameObject.GetComponent<BaseCollider>();
-            this.Collider.AssignParticleObject(this);
-        }
-
-        // Initialize prev pos as current one and invmass
-        foreach (Particle p in particles) {
-            p.position = this.transform.TransformPoint(p.position);
-            p.invMass = 1f / p.mass;
-            p.prevPosition = p.position - velocity / 10f;
-
-            // For visualizer
-            E_pointsTransformedInLocalSpace = true;
-        }
+        // For visualizer
+        E_pointsTransformedInLocalSpace = true;
 
         // Add Tetrahederon and Bounding constraints 
         constraints = new List<Constraint>();
         constraints.Add(new DistanceConstraint(particles, distTuples));
         constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
 
-        // Initialize center position
-        this.centerOfMass = this.ComputeCenterOfMass();
-        this.SetOrientationAxis();
-
         // Add object to simulation
-        VerletSimulation.Instance.AddParticleObject(this);
+        VerletSimulation.Instance.AddSoftBody(this);
 
         // Initialize acceleration
         gravityAcceleraiton = new Vector3(0, -9.81f, 0);
@@ -100,25 +77,17 @@ public class ParticleObject : MonoBehaviour
 
     public void UpdateStep(float dt)
     {
-        if (this.objectType == ObjectType.DYNAMIC)
+        // Integration
+        foreach (Particle p in particles)
         {
-            if (this.integrateThisFrame)
-            {
-                // Integration
-                foreach (Particle p in particles)
-                {
-                    Vector3 temp = p.position;
-                    p.position += p.position - p.prevPosition + acceleration * dt * dt;
-                    p.prevPosition = temp;
-
-                }
-                this.UpdateGameObjectPose(); 
-            }
-            else integrateThisFrame = true;
+            Vector3 temp = p.position;
+            p.position += p.position - p.prevPosition + acceleration * dt * dt;
+            p.prevPosition = temp;
         }
+        UpdateSoftBodyMesh();
     }
 
-    public void SatisfyConstraints(int iterations = 1)
+    public void SatisfyConstraints()
     {
         foreach (Constraint c in constraints)
         {
@@ -126,64 +95,50 @@ public class ParticleObject : MonoBehaviour
         }
     }
 
-    public void SetFrictionVector(Vector3 frictionVector)
+    public void UpdateSoftBodyMesh()
     {
-        this.frictionVector = frictionVector;
-    }
-
-    public void UpdateGameObjectPose()
-    {
-        this.prevCenterOfMass = this.centerOfMass;
-        this.centerOfMass = ComputeCenterOfMass();
-        this.transform.position = this.centerOfMass;
-
-        // bring object to coordinate frame of tetrahedron
-        this.UpdateGameObjectOrientation();
-
-        // move collider on spot based on current transform
-        this.Collider.UpdateColliderPose(Vector3.zero);
-    }
-
-    private Vector3 ComputeCenterOfMass(bool transformToLocalFirst = false)
-    {
-        Vector3 center = Vector3.zero;
-        foreach (Particle p in this.particles)
+        Vector3[] newVertices = new Vector3[this.particles.Length];
+        for (int i = 0; i < this.particles.Length; i++)
         {
-            Vector3 pos = p.position;
-            if (transformToLocalFirst)
-            {
-                pos = this.transform.TransformPoint(pos);
-            }
-            center += pos;
+            newVertices[i] = this.particles[i].position;
         }
-        return center / this.particles.Length;
+
+        this.mesh.vertices = newVertices;
     }
 
-    private void UpdateGameObjectOrientation()
+    //------------------------
+    // SoftBody
+    //------------------------
+    private void CreateParticlesAndConstraints()
     {
-        Quaternion quat = this.GetTetraFrameRotation();
-        this.transform.rotation = quat * this.tetraCoordinateFrame * this.initialOrientation;
+        this.CreateParticlesBasedOnMesh();
+        this.CreateDistanceConstraintsBasedOnMesh();
+    }
+    private void CreateParticlesBasedOnMesh()
+    {
+        this.particles = new Particle[this.mesh.vertexCount];
+        for (int i = 0; i < this.mesh.vertexCount; i++)
+        {
+            this.particles[i] = new Particle(this.mesh.vertices[i], 1f);
+        }
     }
 
-    /// <summary>
-    /// Saves the initial direction of a tetrahedron axis in order to have a reference for orienting the box.
-    /// </summary>
-    private void SetOrientationAxis()
+    private void CreateDistanceConstraintsBasedOnMesh()
     {
-        this.tetraCoordinateFrame = Quaternion.Inverse(this.GetTetraFrameRotation());
-        this.initialOrientation = this.transform.rotation;
-    }
-
-    private Quaternion GetTetraFrameRotation()
-    {
-        Vector3 A = this.particles[0].position;
-        Vector3 B = this.particles[2].position;
-        Vector3 C = this.particles[3].position;
-
-        Vector3 dir1 = B - A;
-        Vector3 dir2 = C - B;
-
-        return Quaternion.LookRotation(dir1, dir2);
+        int totElements = this.mesh.vertexCount * (this.mesh.vertexCount - 1) / 2;
+        this.distTuples = new DistTuple[totElements];
+        int sum = 0;
+        Debug.Log(totElements);
+        for (int i = 0; i < this.mesh.vertexCount; i++)
+        {
+            for (int j = i + 1; j < this.mesh.vertexCount; j++)
+            {
+                //Debug.Log("i: " + i + ", j: " + j + ", sum : " + sum + ", idx: "  + (sum + j - 1));
+                this.distTuples[sum + j - 1] = new DistTuple(i, j, -1);
+            }
+            sum += this.mesh.vertexCount - i - 2;
+        }
+        Debug.Log("FINISH CREATING " + totElements + " CONSTRAINTS");
     }
 
     //------------------------
@@ -192,13 +147,13 @@ public class ParticleObject : MonoBehaviour
     private bool E_pointsTransformedInLocalSpace = false;
     private void OnDrawGizmos()
     {
-        // Draw Particles and Constraints
         if (particles != null)
         {
             float percent = 0f;
             float step = 1f / particles.Length;
             float maxVelocityParticle_val = float.MinValue;
             int maxVelocityParticle_idx = 0;
+            // Draw Particles and Constraints
         
             Color color = Color.red;
             for (int i = 0; i < this.particles.Length; i++)
@@ -209,7 +164,6 @@ public class ParticleObject : MonoBehaviour
                 if (!E_pointsTransformedInLocalSpace)
                 {
                     pLocal = this.transform.TransformPoint(p.position);
-                    this.centerOfMass = this.ComputeCenterOfMass(true);
                 }
 
                 color = Color.Lerp(Color.magenta, Color.yellow, percent);
@@ -283,10 +237,5 @@ public class ParticleObject : MonoBehaviour
         // Draw Center of Mass
         Gizmos.color = Color.green;
         Gizmos.DrawSphere(this.centerOfMass, 0.2f);
-    }
-
-    private void OnValidate()
-    {
-        this.centerOfMass = this.ComputeCenterOfMass();
     }
 }
