@@ -128,7 +128,7 @@ public class SoftBody : MonoBehaviour
         int totElements = this.mesh.vertexCount * (this.mesh.vertexCount - 1) / 2;
         this.distTuples = new DistTuple[totElements];
         int sum = 0;
-        Debug.Log(totElements);
+
         for (int i = 0; i < this.mesh.vertexCount; i++)
         {
             for (int j = i + 1; j < this.mesh.vertexCount; j++)
@@ -140,6 +140,22 @@ public class SoftBody : MonoBehaviour
         }
         Debug.Log("FINISH CREATING " + totElements + " CONSTRAINTS");
     }
+
+    //private void CreateDistanceConstraintsBasedOnMesh()
+    //{
+    //    this.distTuples = new DistTuple[this.mesh.vertexCount];
+
+    //    for (int i = 0; i < this.mesh.vertexCount; i++)
+    //    {
+    //        if (i > 0)
+    //            this.distTuples[i - 1] = new DistTuple(i, i-1, -1);
+    //        if (i < this.mesh.vertexCount - 1)
+    //            this.distTuples[i + 1] = new DistTuple(i, i+1, -1);
+    //    }
+    //    Debug.Log("FINISH CREATING " + this.mesh.vertexCount + " CONSTRAINTS");
+    //}
+
+
 
     //------------------------
     // Drawing
@@ -233,9 +249,5 @@ public class SoftBody : MonoBehaviour
             }
 
         }
-
-        // Draw Center of Mass
-        Gizmos.color = Color.green;
-        Gizmos.DrawSphere(this.centerOfMass, 0.2f);
     }
 }

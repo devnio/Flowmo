@@ -21,7 +21,7 @@ public class Logger : Singleton<Logger>
     {
         if (DebugInfoActive)
         {
-            Debug.Log("INFO " + title + ": " + msg);
+            Debug.Log("INFO [" + title + "]: " + msg);
         }
     }
 

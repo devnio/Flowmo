@@ -68,6 +68,9 @@ public class CollisionManager : Singleton<CollisionManager>
                 {
                     if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
                     {
+                        // Collision Resolution
+                        CollisionResolutionOBB((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
+
                         Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
                                                     Colliders[i].Id + " - " +
                                                     Colliders[j].Id + " !",
@@ -373,46 +376,16 @@ public class CollisionManager : Singleton<CollisionManager>
         float c2Max = float.MinValue;
         float c2Min = float.MaxValue;
 
-        // TODO: only testing something
-        int c1_idx_max = 0;
-        int c1_idx_min = 0;
-        int c2_idx_max = 0;
-        int c2_idx_min = 0;
-
-        // Assume b1 is more positive on the axis than b2
-        if (Vector3.Dot(b1._center - b2._center, axis) < 0f) axis *= -1;
-
         // Project points from cubes to ax. Find extreme points in the axis.
         for (int i = 0; i < 8; i++)
         {
             // Project point to axis;
             float c1Proj = Vector3.Dot(c1.vertices[i], axis);
             float c2Proj = Vector3.Dot(c2.vertices[i], axis);
-
-            if (c1Max < c1Proj)
-            {
-                c1Max = c1Proj;
-                c1_idx_max = i;
-            }
-            if (c1Min > c1Proj)
-            {
-                c1Min = c1Proj;
-                c1_idx_min = i;
-            }
-            if (c2Max < c2Proj)
-            {
-                c2Max = c2Proj;
-                c2_idx_max = i;
-            }
-            if (c2Min > c2Proj)
-            {
-                c2Min = c2Proj;
-                c2_idx_min = i;
-            }
-            //c1Max = Mathf.Max(c1Max, c1Proj);
-            //c1Min = Mathf.Min(c1Min, c1Proj);
-            //c2Max = Mathf.Max(c2Max, c2Proj);
-            //c2Min = Mathf.Min(c2Min, c2Proj);
+            c1Max = Mathf.Max(c1Max, c1Proj);
+            c1Min = Mathf.Min(c1Min, c1Proj);
+            c2Max = Mathf.Max(c2Max, c2Proj);
+            c2Min = Mathf.Min(c2Min, c2Proj);
         }
 
         var max = Mathf.Max(c1Max, c2Max);
@@ -422,6 +395,7 @@ public class CollisionManager : Singleton<CollisionManager>
         float overlapSpan = c1Max - c1Min + c2Max - c2Min;
 
         bool noCollision = longSpan > overlapSpan;
+
         // if no collision happened (found a separating axis) cache the separating axis
         if (noCollision && cacheAxis && !cacheColResolution) CachedSeparatingAxis.Add(GetCachedSeparatingAxisID(b1.Id, b2.Id), axis);
 
@@ -431,12 +405,6 @@ public class CollisionManager : Singleton<CollisionManager>
             float val = overlapSpan - longSpan;
             if (val >= 0 && val < this.currentMinPenetrationDistance && axis != Vector3.zero)
             {
-                // TODO: this is only testing 
-                // //===
-                DebugSpheresContactObb = new List<Vector3>();
-                DebugSpheresContactObb.Add(c1.vertices[c1_idx_min]);
-                // ===//
-
                 this.currentMinPenetrationDistance = val;
                 this.currentMinPenetrationAxis = axis;
                 this.currentCollType = collType;
@@ -492,8 +460,7 @@ public class CollisionManager : Singleton<CollisionManager>
             if (SeparatingAxisCheck(b1, b2, ax3, true, cacheColResponse, CollType.Edge)) return false;
         }
 
-        // Collision Resolution
-        if (!cacheColResponse) CollisionResolutionOBB(b1, b2);
+        Logger.Instance.DebugInfo("No separating axis found (end of function AreOBBsColliding, returning true).", "COLLISION MANAGER");
 
         // No separating axis found -> collision happened.
         return true;
@@ -554,7 +521,7 @@ public class CollisionManager : Singleton<CollisionManager>
         col.a = 0.7f;
         Gizmos.color = col;
 
-        Gizmos.DrawSphere(this.currentClosestPointOnObb, 0.3f);
+        //Gizmos.DrawSphere(this.currentClosestPointOnObb, 0.3f);
 
         if (DebugSpheresContactObb != null)
         {
@@ -573,3 +540,116 @@ public enum CollType
     Vertex,
     Edge
 }
+
+
+
+
+
+
+
+
+
+// ===================
+// OLD: TESTING STUFF
+// ===================
+
+/// <summary>
+/// Checks if there is a separating axis between the two colliders.
+/// Returns true if there is a separating axis (no collision).
+/// </summary>
+/// <param name="cacheAxis"> If the given axis is separating cache this in the system (faster for next round).
+/// This is False if we need to convalidate the previous stored one (don't add 2 times).</param>
+/// <param name="cacheColResolution"> When active we store the MTV and MTD. </param>
+/// <param name="ax"></param>
+/// <returns></returns>
+//private bool SeparatingAxisCheck(ColliderBox b1, ColliderBox b2, Vector3 ax, bool cacheAxis = true, bool cacheColResolution = false, CollType collType = CollType.Vertex)
+//{
+//    if (ax == Vector3.zero) return false;
+
+//    Vector3 axis = ax;
+
+//    axis.Normalize();
+
+//    Cube c1 = b1.cube;
+//    Cube c2 = b2.cube;
+
+//    float c1Max = float.MinValue;
+//    float c1Min = float.MaxValue;
+//    float c2Max = float.MinValue;
+//    float c2Min = float.MaxValue;
+
+//    // TODO: only testing something
+//    int c1_idx_max = 0;
+//    int c1_idx_min = 0;
+//    int c2_idx_max = 0;
+//    int c2_idx_min = 0;
+
+//    // Assume b1 is more positive on the axis than b2
+//    if (Vector3.Dot(b1._center - b2._center, axis) < 0f) axis *= -1;
+
+//    // Project points from cubes to ax. Find extreme points in the axis.
+//    for (int i = 0; i < 8; i++)
+//    {
+//        // Project point to axis;
+//        float c1Proj = Vector3.Dot(c1.vertices[i], axis);
+//        float c2Proj = Vector3.Dot(c2.vertices[i], axis);
+
+//        if (c1Max < c1Proj)
+//        {
+//            c1Max = c1Proj;
+//            c1_idx_max = i;
+//        }
+//        if (c1Min > c1Proj)
+//        {
+//            c1Min = c1Proj;
+//            c1_idx_min = i;
+//        }
+//        if (c2Max < c2Proj)
+//        {
+//            c2Max = c2Proj;
+//            c2_idx_max = i;
+//        }
+//        if (c2Min > c2Proj)
+//        {
+//            c2Min = c2Proj;
+//            c2_idx_min = i;
+//        }
+//        //c1Max = Mathf.Max(c1Max, c1Proj);
+//        //c1Min = Mathf.Min(c1Min, c1Proj);
+//        //c2Max = Mathf.Max(c2Max, c2Proj);
+//        //c2Min = Mathf.Min(c2Min, c2Proj);
+//    }
+
+//    var max = Mathf.Max(c1Max, c2Max);
+//    var min = Mathf.Min(c1Min, c2Min);
+
+//    float longSpan = max - min;
+//    float overlapSpan = c1Max - c1Min + c2Max - c2Min;
+
+//    bool noCollision = longSpan > overlapSpan;
+//    // if no collision happened (found a separating axis) cache the separating axis
+//    if (noCollision && cacheAxis && !cacheColResolution) CachedSeparatingAxis.Add(GetCachedSeparatingAxisID(b1.Id, b2.Id), axis);
+
+//    // we already know a collision happened and try to find min penetration axis for projection
+//    if (cacheColResolution && !noCollision)
+//    {
+//        float val = overlapSpan - longSpan;
+//        if (val >= 0 && val < this.currentMinPenetrationDistance && axis != Vector3.zero)
+//        {
+//            // TODO: this is only testing 
+//            // //===
+//            DebugSpheresContactObb = new List<Vector3>();
+//            DebugSpheresContactObb.Add(c1.vertices[c1_idx_min]);
+//            // ===//
+
+//            this.currentMinPenetrationDistance = val;
+//            this.currentMinPenetrationAxis = axis;
+//            this.currentCollType = collType;
+//            Debug.Log("FOUND MIN AXIS");
+//            Debug.Log(val);
+//            Debug.Log(axis);
+//        }
+//    }
+
+//    return noCollision;
+//}
