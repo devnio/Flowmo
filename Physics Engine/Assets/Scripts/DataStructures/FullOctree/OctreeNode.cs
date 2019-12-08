@@ -274,7 +274,7 @@ public class OctreeNode
             // if the sibling node contains childrens return true (if not leaf node, don't delete)
             if (! ReferenceEquals(sibling.childrenNodes[0], null))
             {
-                Debug.Log("Too many children. Don't kill node.");
+                Logger.Instance.DebugInfo("SiblingTooManyItems(): siblings have children, WON'T destroy children.", "OCTREE NODE");
                 return true;
             }
 
@@ -287,10 +287,12 @@ public class OctreeNode
         if (legacy_items.Count > maxObjectLimit + 1)
         {
             Debug.Log("Too many items  " + legacy_items.Count);
+            Logger.Instance.DebugInfo("SiblingTooManyItems(): too many items " + legacy_items.Count + ", WON'T destroy children.", "OCTREE NODE");
+
             return true;
         }
 
-
+        Logger.Instance.DebugInfo("SiblingTooManyItems(): returning false (means that nodes are destroyed.)", "OCTREE NODE");
         // none of the siblings contain child nodes and their items coudl be hold by the parent so we can get rid of this particular node and his siblings
         return false;
     }
