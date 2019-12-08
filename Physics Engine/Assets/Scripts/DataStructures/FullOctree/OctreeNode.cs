@@ -81,7 +81,7 @@ public class OctreeNode
 
         octantGO.transform.position = this.pos;
         octantGO.transform.localScale = Vector3.one * this.halfDimensionLength * 2;
-
+        this.colliderBoxNode.UpdateColliderPose(Vector3.zero);
 
         // Debug text
         GameObject octantGOChild = new GameObject("DebugText_" + this.name);
@@ -93,8 +93,8 @@ public class OctreeNode
         this.textDebugMesh.characterSize = 0.1f;
 
         // Vizualization
-        octantLineRenderer = octantGO.AddComponent<LineRenderer>();
-        FillCube_VisualizeCoords(); // fill coords of line renderer
+        //octantLineRenderer = octantGO.AddComponent<LineRenderer>();
+        //FillCube_VisualizeCoords(); // fill coords of line renderer
 
         foreach (OctreeItem item in potential_items)
         {
@@ -183,6 +183,22 @@ public class OctreeNode
             positionVector = Quaternion.Euler(0f, -90f, 0f) * positionVector;
         }
 
+        // TODO: ADDED [CHECK PERFORMANCE] Update all the contained items for the new tree structure before clearing this node
+        foreach (OctreeItem oi in containedItems)
+        {
+            foreach (OctreeNode childNode in childrenNodes)
+            {
+                // TODO: after fix, try swapping this comment/uncomment group
+                //if (childNode.ProcessItem(item))
+                //{
+                //    return true;
+                //}
+                childNode.ProcessItem(oi);
+                Logger.Instance.DebugInfo("Split(): created 8 childs -> processing item " + oi.name + " in the node " + childNode.GetName(), "OCTREE NODE");
+
+            }
+        }
+
         containedItems.Clear();
     }
 
@@ -204,28 +220,36 @@ public class OctreeNode
 
                 // TODO: DEBUG (comment later)
                 this.UpdateDebugMeshText();
+                item.UpdateDebugMeshText();
 
                 return true;
             }
             else
             {
+                bool proc = false;
                 // If this node has childs then process all the subnodes to see who containts this item
                 foreach(OctreeNode childNode in childrenNodes)
                 {
-                    //if (childNode.ProcessItem(item))
-                    //{
-                    //    return true;
-                    //}
-                    childNode.ProcessItem(item);
+                    // TODO: after fix, try swapping this comment/uncomment group
+                    if (childNode.ProcessItem(item))
+                    {
+                        //return true;
+                        proc = true;
+                    }
+                    //childNode.ProcessItem(item);
                 }
 
                 // TODO: DEBUG (comment later)
                 this.UpdateDebugMeshText();
+                item.UpdateDebugMeshText();
+
+                return proc;
             }
         }
 
         // TODO: DEBUG (comment later)
         this.UpdateDebugMeshText();
+        item.UpdateDebugMeshText();
 
         return false;
     }
@@ -284,7 +308,7 @@ public class OctreeNode
         }
 
         // too many items for the parent to hold (don't get rid of siblings and this particulare obsolete node)
-        if (legacy_items.Count > maxObjectLimit + 1)
+        if (legacy_items.Count > maxObjectLimit)
         {
             Debug.Log("Too many items  " + legacy_items.Count);
             Logger.Instance.DebugInfo("SiblingTooManyItems(): too many items " + legacy_items.Count + ", WON'T destroy children.", "OCTREE NODE");

@@ -49,10 +49,16 @@ public class ColliderBox : BaseCollider
 	// Contains min and max which are computed from the displaceCenter and xyzLength
 	public AABB aabb;
 
-	private void Start()
+    private void Awake()
     {
         // Assign unique Id
         this.AssignUniqueId();
+    }
+
+    private void Start()
+    {
+        //// Assign unique Id
+        //this.AssignUniqueId();
 
         // Add to collision manager
         CollisionManager.Instance.AddCollider(this);

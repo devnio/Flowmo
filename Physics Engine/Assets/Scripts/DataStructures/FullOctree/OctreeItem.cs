@@ -35,6 +35,7 @@ public class OctreeItem : MonoBehaviour
     /// <summary>
     /// Check the references to the nodes. Where is this item contained?
     /// </summary>
+    [ContextMenu("RefreshOwners")]
     public void RefreshOwners()
     {
         Debug.Log("OCTREE ITEM CREATE/MOVED: Refreshing owners");
