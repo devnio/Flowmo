@@ -37,7 +37,7 @@ public class DistanceConstraint : Constraint
 
     public override void ConstraintUpdate()
     {
-        foreach(Tuple<int, int, float> tuple in this.distanceConstraints)
+        foreach(DistTuple tuple in this.distanceConstraints)
         {
             Particle p1 = this.particlesUnderConstraint[tuple.Item1];
             Particle p2 = this.particlesUnderConstraint[tuple.Item2];
@@ -50,9 +50,10 @@ public class DistanceConstraint : Constraint
             if (Util.CMP(deltaLen, 0f) || float.IsNaN(deltaLen)) continue;
 
             float diff = (deltaLen - distConst) / (deltaLen * (p1.invMass + p2.invMass));
-            float w = 0.01f;
-            p1.position += delta * 0.5f * diff * w;
-            p2.position -= delta * 0.5f * diff * w;
+            //float w = 0.01f; //TODO: have it as a value in the VerletSimulation singleton
+            float w = tuple.springW;
+            p1.position += delta * 0.5f * diff * w * p1.invMass;
+            p2.position -= delta * 0.5f * diff * w * p2.invMass;
         }
     }
 }

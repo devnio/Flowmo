@@ -20,6 +20,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     public int ConstraintIterations = 4;
     public List<ParticleObject> ParticleObjects;
     public List<SoftBody> SoftBodyObjects;
+    public List<Cloth> ClothObjects;
 
 
     private void Update()
@@ -50,19 +51,28 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
 
     public void UpdateParticles(float dt)
     {
+        // PARTICLE OBJ
         foreach (ParticleObject pb in ParticleObjects)
         {
             pb.UpdateStep(dt);
         }
 
-        foreach(SoftBody sb in SoftBodyObjects)
+        // SOFT BODY OBJ
+        foreach (SoftBody sb in SoftBodyObjects)
         {
             sb.UpdateStep(dt);
+        }
+
+        // CLOTH OBJ
+        foreach (Cloth cl in ClothObjects)
+        {
+            cl.UpdateStep(dt);
         }
     }
 
     public void SatisfyConstraints(int iterations)
     {
+        // PARTICLE OBJ
         foreach (ParticleObject pb in ParticleObjects)
         {
             for (int i = 0; i < iterations; i++)
@@ -72,11 +82,21 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
             pb.UpdateGameObjectPose();
         }
 
+        // SOFT BODY OBJ
         foreach(SoftBody sb in SoftBodyObjects)
         {
             for (int i = 0; i < iterations; i++)
             {
                 sb.SatisfyConstraints();
+            }
+        }
+
+        // CLOTH OBJ
+        foreach (Cloth cl in ClothObjects)
+        {
+            for (int i = 0; i < iterations; i++)
+            {
+                cl.SatisfyConstraints();
             }
         }
     }
@@ -85,6 +105,9 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     /// Add a new particle object to the list of objects that get updated in the simulation.
     /// </summary>
     /// <param name="rigidBody"></param>
+    /// =================
+    /// Particle Object
+    /// =================
     public void AddParticleObject(ParticleObject pObject)
     {
         if (ParticleObjects == null)
@@ -96,6 +119,9 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         Logger.Instance.DebugInfo("Added a particle object!");
     }
 
+    /// =================
+    /// Soft Body Object
+    /// =================
     public void AddSoftBody(SoftBody sbObject)
     {
         if (SoftBodyObjects == null)
@@ -104,7 +130,21 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         }
         SoftBodyObjects.Add(sbObject);
 
-        Logger.Instance.DebugInfo("Added a particle object!");
+        Logger.Instance.DebugInfo("Added a soft body object!");
+    }
+
+    /// =================
+    /// Cloth Object
+    /// =================
+    public void AddCloth(Cloth clothObject)
+    {
+        if (ClothObjects == null)
+        {
+            ClothObjects = new List<Cloth>();
+        }
+        ClothObjects.Add(clothObject);
+
+        Logger.Instance.DebugInfo("Added a cloth object!");
     }
 
     public bool _stopSimulation = false;

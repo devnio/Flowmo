@@ -8,11 +8,13 @@
 [System.Serializable]
 public class DistTuple : Tuple<int, int, float>
 {
-    public DistTuple(int particle1, int particle2, float distance)
+    public float springW;
+    public DistTuple(int particle1, int particle2, float distance, float springWeight = 1f)
     {
         Item1 = particle1;
         Item2 = particle2;
         Item3 = distance;
+        this.springW = springWeight;
     }
 }
 

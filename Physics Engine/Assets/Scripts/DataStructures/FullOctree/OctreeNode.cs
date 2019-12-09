@@ -45,8 +45,9 @@ public class OctreeNode
     {
         get { return _childrenNodes; }
     }
-    
-    [RuntimeInitializeOnLoadMethod]
+
+    //TODO: add the init inside the collision manager
+    //[RuntimeInitializeOnLoadMethod]
     static bool Init()
     {
         return octreeRoot == null;  // the first time the getter creates the object.
