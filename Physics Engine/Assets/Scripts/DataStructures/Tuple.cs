@@ -8,7 +8,7 @@
 [System.Serializable]
 public class DistTuple : Tuple<int, int, float>
 {
-    public float springW;
+    public float springW = 1f;
     public DistTuple(int particle1, int particle2, float distance, float springWeight = 1f)
     {
         Item1 = particle1;

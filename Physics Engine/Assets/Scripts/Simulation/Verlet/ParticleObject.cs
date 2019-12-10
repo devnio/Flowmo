@@ -56,14 +56,33 @@ public class ParticleObject : MonoBehaviour
         // Check if there is a collider
         if (this.gameObject.GetComponent<BaseCollider>() != null)
         {
-            this.Collider = this.gameObject.GetComponent<BaseCollider>();
+            BaseCollider[] baseColliders = this.gameObject.GetComponents<BaseCollider>();
+
+            // if more than one, then take the sphere collider
+            if (baseColliders.Length > 1)
+            {
+                if (baseColliders[0] as SphereCollider != null)
+                {
+                    this.Collider = baseColliders[0];
+                }
+                else
+                {
+                    this.Collider = baseColliders[1];
+                }
+            }
+            else
+            {
+                this.Collider = baseColliders[0];
+
+            }
+
             this.Collider.AssignParticleObject(this);
         }
 
         // Initialize prev pos as current one and invmass
         foreach (Particle p in particles) {
             p.position = this.transform.TransformPoint(p.position);
-            p.invMass = 1f / p.mass;
+            //p.invMass = 1f / p.mass;
             p.prevPosition = p.position - velocity / 10f;
 
             // For visualizer
@@ -73,7 +92,7 @@ public class ParticleObject : MonoBehaviour
         // Add Tetrahederon and Bounding constraints 
         constraints = new List<Constraint>();
         constraints.Add(new DistanceConstraint(particles, distTuples));
-        constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
+        //constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
 
         // Initialize center position
         this.centerOfMass = this.ComputeCenterOfMass();

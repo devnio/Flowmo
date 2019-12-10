@@ -43,6 +43,24 @@ public class CollisionManager : Singleton<CollisionManager>
         Logger.Instance.DebugInfo("CollisionManager: Started");
         CachedSeparatingAxis = new Dictionary<int, Vector3>();
 
+        //=======
+        // Octree
+        //=======
+        OctreeNode.Init();
+
+        // Update in Octree
+        foreach (BaseCollider bc in this.Colliders)
+        {
+            OctreeItem oi = bc.GetComponent<OctreeItem>();
+            if (oi != null)
+            {
+                oi.RefreshOwners();
+            }
+        }
+
+        //=======
+        // Debug
+        //=======
         if (debug)
         {
             SATDebugCube = Instantiate(SATDebugCubePrefab);

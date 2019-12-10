@@ -43,7 +43,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         UpdateParticles(dt);
 
         // Detect Collisions
-        //CollisionManager.Instance.DetectCollisions();
+        CollisionManager.Instance.DetectCollisions();
 
         // Satisfy Constraints
         SatisfyConstraints(this.ConstraintIterations);

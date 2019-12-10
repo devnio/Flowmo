@@ -49,6 +49,8 @@ public class ColliderBox : BaseCollider
 	// Contains min and max which are computed from the displaceCenter and xyzLength
 	public AABB aabb;
 
+    public bool AddToCollisionManager = true;  // this is false for the octree, since the checks are performed by the data structure itself
+
     private void Awake()
     {
         // Assign unique Id
@@ -61,7 +63,10 @@ public class ColliderBox : BaseCollider
         //this.AssignUniqueId();
 
         // Add to collision manager
-        CollisionManager.Instance.AddCollider(this);
+        if (this.AddToCollisionManager)
+        {
+            CollisionManager.Instance.AddCollider(this);
+        }
     }
 
     public override void UpdateColliderPose(Vector3 displace)

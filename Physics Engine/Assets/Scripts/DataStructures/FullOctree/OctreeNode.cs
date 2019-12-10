@@ -18,6 +18,8 @@ public class OctreeNode
     private ColliderBox colliderBoxNode;
     private TextMesh textDebugMesh;
 
+    static public List<OctreeItem> itemsToCheckForCollision;
+
     static OctreeNode _octreeRoot;  // only one root between all nodes (singleton)
     static public OctreeNode octreeRoot
     {
@@ -48,7 +50,7 @@ public class OctreeNode
 
     //TODO: add the init inside the collision manager
     //[RuntimeInitializeOnLoadMethod]
-    static bool Init()
+    public static bool Init()
     {
         return octreeRoot == null;  // the first time the getter creates the object.
     }
@@ -78,6 +80,7 @@ public class OctreeNode
         octantGO.name = this.name; 
         
         this.colliderBoxNode = octantGO.AddComponent<ColliderBox>();
+        this.colliderBoxNode.AddToCollisionManager = false;
         this.colliderBoxNode.xyzLength = Vector3.one;
 
         octantGO.transform.position = this.pos;

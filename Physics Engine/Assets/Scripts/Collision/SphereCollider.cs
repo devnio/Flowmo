@@ -11,10 +11,20 @@ public class SphereCollider : BaseCollider
     [HideInInspector]
     public float SqrRadius;
 
+    private ColliderBox colliderBoxForOctree;
+
     private void Start()
     {
         // Assign unique Id
         this.AssignUniqueId();
+
+        // Check if this game object also has a colliderbox, if that's the case it means that its used for the octree
+        colliderBoxForOctree = this.GetComponent<ColliderBox>();
+        if (colliderBoxForOctree != null)
+        {
+            // make sure this is false (make it in the inspector to be sure)
+            this.colliderBoxForOctree.AddToCollisionManager = false;
+        }
 
         // Add to collision manager
         CollisionManager.Instance.AddCollider(this);
@@ -32,6 +42,10 @@ public class SphereCollider : BaseCollider
     {
         // displace used for finding min penetration distance for collision
         this._center = this.transform.TransformPoint(this.displaceCenter + displace);
+        //if (this.colliderBoxForOctree != null)
+        //{
+        //    this.colliderBoxForOctree.UpdateColliderPose(Vector3.zero);
+        //}
 
         // relative to localScale (UNCOMMENT IF SCALE IS CHANGING DURING RUNTIME)
         //if (this.isRunning)
