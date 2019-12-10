@@ -7,6 +7,8 @@ public class OctreeItem : MonoBehaviour
     public List<OctreeNode> my_ownerNodes = new List<OctreeNode>(); // owner node for current node
     private Vector3 prevPos;
     public ColliderBox colliderBox;  // TODO: add aabb to BaseCollider and overwrite in case of BoxCollider
+    public SphereCollider sphereCollider;
+
 
     // Debug
     private TextMesh textDebugMesh;
@@ -20,6 +22,8 @@ public class OctreeItem : MonoBehaviour
         }
         
         prevPos = transform.position;
+
+        sphereCollider = this.GetComponent<SphereCollider>();
     }
 
 
@@ -38,7 +42,7 @@ public class OctreeItem : MonoBehaviour
     [ContextMenu("RefreshOwners")]
     public void RefreshOwners()
     {
-        Debug.Log("OCTREE ITEM CREATE/MOVED: Refreshing owners");
+        //Debug.Log("OCTREE ITEM CREATE/MOVED: Refreshing owners");
 
         // Moved, so check for octree status
         OctreeNode.octreeRoot.ProcessItem(this);
@@ -71,7 +75,7 @@ public class OctreeItem : MonoBehaviour
         }
 
         // DEBUG
-        UpdateDebugMeshText();
+        //UpdateDebugMeshText();
     }
 
 

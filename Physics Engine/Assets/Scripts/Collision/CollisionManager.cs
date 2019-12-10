@@ -81,65 +81,127 @@ public class CollisionManager : Singleton<CollisionManager>
 
     public void DetectCollisions()
     {
-        // TODO: Spatial structure.
-        int count = Colliders.Count;
-        for (int i = 0; i < count; i++)
+
+        foreach (OctreeNode octNode in OctreeNode.NodesToCheckForCollision)
         {
-            for (int j = i + 1; j < count; j++)
+            OctreeItem[] octreeItems = octNode.containedItems.ToArray();
+            for (int i = 0; i < octreeItems.Length; i++)
             {
-                // OBB vs OBB
-                if (Colliders[i] as ColliderBox != null && Colliders[j] as ColliderBox != null)
+                for (int j = i + 1; j < octreeItems.Length; j++)
                 {
-                    if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
+                    OctreeItem oi0 = octreeItems[i];
+                    OctreeItem oi1 = octreeItems[j];
+
+
+                    if (oi0.sphereCollider != null && oi1.sphereCollider != null)
                     {
-                        // Collision Resolution
-                        CollisionResolutionOBB((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
+                        //SPHERE vs SPHERE
+                        SphereCollider s0 = oi0.sphereCollider;
+                        SphereCollider s1 = oi1.sphereCollider;
 
-                        Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
-                                                    Colliders[i].Id + " - " +
-                                                    Colliders[j].Id + " !",
-                                                    "COLLISION_MANAGER");
-                    }
-                }
-
-                // SPHERE vs SPHERE
-                else if (Colliders[i] as SphereCollider != null && Colliders[j] as SphereCollider != null)
-                {
-                    if (AreSpheresColliding((SphereCollider)Colliders[i], (SphereCollider)Colliders[j]))
-                    {
-                        Logger.Instance.DebugInfo("Collision happened [Sphere vs Sphere]: " +
-                                                    Colliders[i].Id + " - " +
-                                                    Colliders[j].Id + " !",
-                                                    "COLLISION_MANAGER");
-                    }
-                }
-
-                // OBB vs SPHERE
-                else
-                {
-                    ColliderBox b = Colliders[i] as ColliderBox;
-                    SphereCollider s = Colliders[j] as SphereCollider;
-
-                    if (b == null)
-                    {
-                        b = Colliders[j] as ColliderBox;
-                        s = Colliders[i] as SphereCollider;
-                    }
-
-                    if (b != null && s != null)
-                    {
-                        if (AreSphereOBBColliding(b, s))
+                        if (AreSpheresColliding(s0, s1))
                         {
-                            Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
+                            Logger.Instance.DebugInfo("Collision happened [Sphere vs Sphere]: " +
                                                         Colliders[i].Id + " - " +
                                                         Colliders[j].Id + " !",
                                                         "COLLISION_MANAGER");
+                        }
+                    }
+
+                    else
+                    {
+                        //OBB vs SPHERE
+                        SphereCollider s;
+                        ColliderBox b;
+
+                        if (oi0.sphereCollider != null)
+                        {
+                            s = oi0.sphereCollider;
+                            b = oi1.colliderBox;
+                        }
+                        else
+                        {
+                            s = oi1.sphereCollider;
+                            b = oi0.colliderBox;
+                        }
+                        if (b != null && s != null)
+                        {
+                            //Debug.Log(octreeItems.Length);
+                            if (AreSphereOBBColliding(b, s))
+                            {
+                                Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
+                                                            Colliders[i].Id + " - " +
+                                                            Colliders[j].Id + " !",
+                                                            "COLLISION_MANAGER");
+                            }
                         }
                     }
                 }
             }
         }
     }
+
+    //public void DetectCollisions()
+    //{
+    //    // TODO: Spatial structure.
+    //    int count = Colliders.Count;
+    //    for (int i = 0; i < count; i++)
+    //    {
+    //        for (int j = i + 1; j < count; j++)
+    //        {
+    //            // OBB vs OBB
+    //            if (Colliders[i] as ColliderBox != null && Colliders[j] as ColliderBox != null)
+    //            {
+    //                if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
+    //                {
+    //                    // Collision Resolution
+    //                    CollisionResolutionOBB((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
+
+    //                    Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
+    //                                                Colliders[i].Id + " - " +
+    //                                                Colliders[j].Id + " !",
+    //                                                "COLLISION_MANAGER");
+    //                }
+    //            }
+
+    //            // SPHERE vs SPHERE
+    //            else if (Colliders[i] as SphereCollider != null && Colliders[j] as SphereCollider != null)
+    //            {
+    //                if (AreSpheresColliding((SphereCollider)Colliders[i], (SphereCollider)Colliders[j]))
+    //                {
+    //                    Logger.Instance.DebugInfo("Collision happened [Sphere vs Sphere]: " +
+    //                                                Colliders[i].Id + " - " +
+    //                                                Colliders[j].Id + " !",
+    //                                                "COLLISION_MANAGER");
+    //                }
+    //            }
+
+    //            // OBB vs SPHERE
+    //            else
+    //            {
+    //                ColliderBox b = Colliders[i] as ColliderBox;
+    //                SphereCollider s = Colliders[j] as SphereCollider;
+
+    //                if (b == null)
+    //                {
+    //                    b = Colliders[j] as ColliderBox;
+    //                    s = Colliders[i] as SphereCollider;
+    //                }
+
+    //                if (b != null && s != null)
+    //                {
+    //                    if (AreSphereOBBColliding(b, s))
+    //                    {
+    //                        Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
+    //                                                    Colliders[i].Id + " - " +
+    //                                                    Colliders[j].Id + " !",
+    //                                                    "COLLISION_MANAGER");
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
     //---------------------------------
     // Collision Methods

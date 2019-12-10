@@ -18,7 +18,7 @@ public class OctreeNode
     private ColliderBox colliderBoxNode;
     private TextMesh textDebugMesh;
 
-    static public List<OctreeItem> itemsToCheckForCollision;
+    static public List<OctreeNode> NodesToCheckForCollision;  // every time you add an item check if more than 2 items contain it and take items
 
     static OctreeNode _octreeRoot;  // only one root between all nodes (singleton)
     static public OctreeNode octreeRoot
@@ -52,6 +52,7 @@ public class OctreeNode
     //[RuntimeInitializeOnLoadMethod]
     public static bool Init()
     {
+        NodesToCheckForCollision = new List<OctreeNode>();
         return octreeRoot == null;  // the first time the getter creates the object.
     }
 
@@ -125,10 +126,22 @@ public class OctreeNode
         foreach (OctreeItem oi in containedItems)
         {
             oi.my_ownerNodes = oi.my_ownerNodes.Except(obsoleteSiblingNodes).ToList();
+
+            
+            foreach (OctreeNode octNode in obsoleteSiblingNodes)
+            {
+                if (NodesToCheckForCollision.Contains(octNode))
+                {
+                    NodesToCheckForCollision.Remove(octNode);
+                }
+            }
+
             oi.my_ownerNodes.Remove(this);
 
             oi.my_ownerNodes.Add(this.parent);
             parent.containedItems.Add(oi);
+
+            AddContainedItemsToItemCollisionCheckList(this.parent);
         }
 
         // remove the references to objects (octantGO)
@@ -138,6 +151,15 @@ public class OctreeNode
             GameObject.Destroy(sibling.octantGO);
         }
         GameObject.Destroy(this.octantGO);
+    }
+
+    private void AddContainedItemsToItemCollisionCheckList(OctreeNode octNodeToAdd)
+    {
+        if (octNodeToAdd.containedItems.Count > 1 && !NodesToCheckForCollision.Contains(octNodeToAdd))
+        {
+            //ItemsToCheckForCollision.AddRange(this.containedItems.Except(ItemsToCheckForCollision));
+            NodesToCheckForCollision.Add(octNodeToAdd);
+        }
     }
 
     /// <summary>
@@ -150,6 +172,7 @@ public class OctreeNode
         {
             containedItems.Add(item);
             item.my_ownerNodes.Add(this);
+            AddContainedItemsToItemCollisionCheckList(this);
             Logger.Instance.DebugInfo("PushItem: adding item to the current node (no need to split).", "OCTREE NODE");
         }
 
@@ -188,20 +211,20 @@ public class OctreeNode
         }
 
         // TODO: ADDED [CHECK PERFORMANCE] Update all the contained items for the new tree structure before clearing this node
-        foreach (OctreeItem oi in containedItems)
-        {
-            foreach (OctreeNode childNode in childrenNodes)
-            {
-                // TODO: after fix, try swapping this comment/uncomment group
-                //if (childNode.ProcessItem(item))
-                //{
-                //    return true;
-                //}
-                childNode.ProcessItem(oi);
-                Logger.Instance.DebugInfo("Split(): created 8 childs -> processing item " + oi.name + " in the node " + childNode.GetName(), "OCTREE NODE");
+        //foreach (OctreeItem oi in containedItems)
+        //{
+        //    foreach (OctreeNode childNode in childrenNodes)
+        //    {
+        //        // TODO: after fix, try swapping this comment/uncomment group
+        //        if (childNode.ProcessItem(oi))
+        //        {
+        //            return;
+        //        }
+        //        //childNode.ProcessItem(oi);
+        //        Logger.Instance.DebugInfo("Split(): created 8 childs -> processing item " + oi.name + " in the node " + childNode.GetName(), "OCTREE NODE");
 
-            }
-        }
+        //    }
+        //}
 
         containedItems.Clear();
     }
@@ -223,8 +246,8 @@ public class OctreeNode
                 PushItem(item);
 
                 // TODO: DEBUG (comment later)
-                this.UpdateDebugMeshText();
-                item.UpdateDebugMeshText();
+                //this.UpdateDebugMeshText();
+                //item.UpdateDebugMeshText();
 
                 return true;
             }
@@ -244,16 +267,16 @@ public class OctreeNode
                 }
 
                 // TODO: DEBUG (comment later)
-                this.UpdateDebugMeshText();
-                item.UpdateDebugMeshText();
+                //this.UpdateDebugMeshText();
+                //item.UpdateDebugMeshText();
 
                 return proc;
             }
         }
 
         // TODO: DEBUG (comment later)
-        this.UpdateDebugMeshText();
-        item.UpdateDebugMeshText();
+        //this.UpdateDebugMeshText();
+        //item.UpdateDebugMeshText();
 
         return false;
     }
@@ -284,7 +307,7 @@ public class OctreeNode
         }
 
         // TODO: DEBUG (comment later)
-        this.UpdateDebugMeshText();
+        //this.UpdateDebugMeshText();
     }
 
     /// <summary>
@@ -300,7 +323,7 @@ public class OctreeNode
         foreach(OctreeNode sibling in parent.childrenNodes)
         {
             // if the sibling node contains childrens return true (if not leaf node, don't delete)
-            if (! ReferenceEquals(sibling.childrenNodes[0], null))
+            if (!ReferenceEquals(sibling.childrenNodes[0], null))
             {
                 Logger.Instance.DebugInfo("SiblingTooManyItems(): siblings have children, WON'T destroy children.", "OCTREE NODE");
                 return true;
@@ -314,7 +337,7 @@ public class OctreeNode
         // too many items for the parent to hold (don't get rid of siblings and this particulare obsolete node)
         if (legacy_items.Count > maxObjectLimit)
         {
-            Debug.Log("Too many items  " + legacy_items.Count);
+            //Debug.Log("Too many items  " + legacy_items.Count);
             Logger.Instance.DebugInfo("SiblingTooManyItems(): too many items " + legacy_items.Count + ", WON'T destroy children.", "OCTREE NODE");
 
             return true;
@@ -355,7 +378,7 @@ public class OctreeNode
 
     public void UpdateDebugMeshText()
     {
-        if (this.textDebugMesh != null)
+        if (this.textDebugMesh != null && false)
         {
             string d = "Contained ITEMS: \n";
             // ITEMS
