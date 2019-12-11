@@ -12,9 +12,12 @@ public class DistTupleEditor : PropertyDrawer
         var particle2 = property.FindPropertyRelative("Item2");
         var distance = property.FindPropertyRelative("Item3");
         var springW = property.FindPropertyRelative("springW");
+        var springD = property.FindPropertyRelative("springD");
 
         label.text = "Distance Constraint";
+        rect.y += 20f;
         Rect contentPosition = EditorGUI.PrefixLabel(rect, label);
+        float initX = contentPosition.x;
         EditorGUIUtility.labelWidth = 50;
 
         contentPosition.width /= 4f;
@@ -29,6 +32,9 @@ public class DistTupleEditor : PropertyDrawer
         contentPosition.x += contentPosition.width;
 
         springW.floatValue = EditorGUI.FloatField(contentPosition, "K: ", springW.floatValue);
+        contentPosition.x += contentPosition.width;
+
+        springD.floatValue = EditorGUI.FloatField(contentPosition, "D: ", springD.floatValue);
 
         EditorGUI.EndProperty();
     }

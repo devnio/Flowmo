@@ -51,9 +51,11 @@ public class DistanceConstraint : Constraint
 
             float diff = (deltaLen - distConst) / (deltaLen * (p1.invMass + p2.invMass));
             //float w = 0.01f; //TODO: have it as a value in the VerletSimulation singleton
-            float w = tuple.springW;
-            p1.position += delta * 0.5f * diff * w * p1.invMass;
-            p2.position -= delta * 0.5f * diff * w * p2.invMass;
+            float k = tuple.springW;
+            float d = tuple.springD * 0.01f;  // should be multiplied by the velocity
+            Vector3 m = delta * 0.5f * diff;
+            p1.position += (m * k - d * p1.velocity) * p1.invMass;
+            p2.position -= (m * k + d * p2.velocity) * p2.invMass;
         }
     }
 }

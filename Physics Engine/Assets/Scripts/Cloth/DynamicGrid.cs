@@ -11,18 +11,25 @@ public class DynamicGrid : MonoBehaviour
     private Vector3[] vertices;
     private Mesh mesh;
 
-    public void Generate()
+    public void Generate(int clothSize = 10)
     {
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
         mesh.name = "Procedural Grid";
 
+        this.xSize = clothSize;
+        this.ySize = clothSize;
+
         // Generate vertices
         vertices = new Vector3[(xSize + 1) * (ySize + 1)];
+
+        float dispX = (xSize + 1) / 2f;
+        float dispY = (ySize + 1) / 2f;
+
         for (int i = 0, y = 0; y <= ySize; y++)
         {
             for (int x = 0; x <= xSize; x++, i++)
             {
-                vertices[i] = new Vector3(x, y);
+                vertices[i] = new Vector3(x - dispX, y - dispY);
             }
         }
         mesh.vertices = this.vertices;

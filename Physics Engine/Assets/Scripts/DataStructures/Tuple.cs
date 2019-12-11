@@ -9,12 +9,14 @@
 public class DistTuple : Tuple<int, int, float>
 {
     public float springW = 1f;
-    public DistTuple(int particle1, int particle2, float distance, float springWeight = 1f)
+    public float springD = 0f;
+    public DistTuple(int particle1, int particle2, float distance, float springWeight = 1f, float springDamping = 0f)
     {
         Item1 = particle1;
         Item2 = particle2;
         Item3 = distance;
         this.springW = springWeight;
+        this.springD = springDamping;
     }
 }
 

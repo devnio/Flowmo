@@ -3,9 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+public struct ClothParameters
+{
+    public int clothSize;
+
+    public float structuralStiffness;
+    public float bendStiffness;
+    public float shearStiffness;
+
+    public float structuralDamping;
+    public float bendDamping;
+    public float shearDamping;
+}
+
 public class Cloth : MonoBehaviour
 {
-
     [HideInInspector]
     public Vector3 prevCenterOfMass; // used for the collision point q (the one to shift towards)
     [HideInInspector]
@@ -30,17 +42,48 @@ public class Cloth : MonoBehaviour
     private Mesh mesh;
     public DynamicGrid dynamicGrid;
 
+    public ClothParameters clothParams;
+
     private void Start()
     {
+        // Pass reference to UIClothManager
+        UIClothManager.Instance.cloth = this;
+
         this.meshFilter = this.GetComponent<MeshFilter>();
         this.dynamicGrid = this.GetComponent<DynamicGrid>();
 
-        this.dynamicGrid.Generate();
+        // Add object to simulation
+        VerletSimulation.Instance.AddCloth(this);
 
+        // Initialize acceleration
+        gravityAcceleraiton = new Vector3(0, -9.81f, 0);
+        if (this.UseGravity) acceleration += gravityAcceleraiton;
+
+    }
+
+    // Used in the UI
+    public void GenerateCloth()
+    {
+
+        this.dynamicGrid.Generate(this.clothParams.clothSize);
         this.mesh = this.meshFilter.mesh;
-
         this.CreateParticlesAndConstraints();
+        this.InitializeConstraints();
+    }
 
+    // Used in the UI
+    public void ResetCloth()
+    {
+        this.meshFilter.mesh = null;
+        this.particles = null;
+        this.constraints = null;
+    }
+
+    /// <summary>
+    /// After cloth has been generated the constraints have to be initialized from the distance tuples.
+    /// </summary>
+    public void InitializeConstraints()
+    {
         // Instantiate debugging arrows
         if (this.ShowVelocityArrows)
         {
@@ -58,14 +101,6 @@ public class Cloth : MonoBehaviour
         // Add Tetrahederon and Bounding constraints 
         constraints = new List<Constraint>();
         constraints.Add(new DistanceConstraint(particles, distTuples));
-        //constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
-
-        // Add object to simulation
-        VerletSimulation.Instance.AddCloth(this);
-
-        // Initialize acceleration
-        gravityAcceleraiton = new Vector3(0, -9.81f, 0);
-        if (this.UseGravity) acceleration += gravityAcceleraiton;
     }
 
     /// <summary>
@@ -76,6 +111,7 @@ public class Cloth : MonoBehaviour
         foreach (Particle p in particles)
         {
             p.prevPosition = p.position;
+            p.velocity = Vector3.zero;
         }
     }
 
@@ -87,6 +123,9 @@ public class Cloth : MonoBehaviour
             Vector3 temp = p.position;
             p.position += p.position - p.prevPosition + (acceleration * dt * dt) * p.invMass;
             p.prevPosition = temp;
+
+            // Update velocity used (only for damping now)
+            p.velocity = p.position - p.prevPosition;
         }
         UpdateSoftBodyMesh();
     }
@@ -116,7 +155,7 @@ public class Cloth : MonoBehaviour
     private void CreateParticlesAndConstraints()
     {
         this.CreateParticlesBasedOnMesh();
-        this.CreateZigZagDistanceConstraints();
+        this.CreateDistanceConstraints();
         //this.CreateDistanceConstraintsBasedOnMesh();
     }
     private void CreateParticlesBasedOnMesh()
@@ -125,6 +164,8 @@ public class Cloth : MonoBehaviour
         for (int i = 0; i < this.mesh.vertexCount; i++)
         {
             this.particles[i] = new Particle(this.mesh.vertices[i], 1f);
+
+            // Clamp end particles
             if (i == (this.dynamicGrid.xSize+1) * this.dynamicGrid.ySize || i == ((this.dynamicGrid.xSize + 1) * (this.dynamicGrid.ySize + 1)-1))
             {
                 particles[i].invMass = 0;
@@ -132,7 +173,7 @@ public class Cloth : MonoBehaviour
         }
     }
 
-    private void CreateZigZagDistanceConstraints()
+    private void CreateDistanceConstraints()
     {
         //for structural springs add: +((this.dynamicGrid.ySize) * (this.dynamicGrid.xSize + 1) * 2)
         int tot_dist_const = (this.dynamicGrid.xSize) * (this.dynamicGrid.ySize) * 2 +
@@ -141,53 +182,61 @@ public class Cloth : MonoBehaviour
 
         this.distTuples = new DistTuple[tot_dist_const];
         int i = 0;
+
+        float springW = 0.05f;
+        float springD = 0.4f;
+
+        // shear springs
         for (int y = 0; y <= this.dynamicGrid.ySize - 1; y++)
         {
             for (int x = 0; x <= this.dynamicGrid.xSize; x++)
             {
                 if (x == 0)
                 {
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x + 1), -1);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x + 1), -1,
+                        clothParams.shearStiffness, clothParams.shearDamping);
                     i++;
                 }
                 else if (x == this.dynamicGrid.xSize)
                 {
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x - 1), -1);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x - 1), -1,
+                        clothParams.shearStiffness, clothParams.shearDamping);
                     i++;
                 }
                 else
                 {
-                    Debug.Log("INISDE");
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x + 1), -1);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x + 1), -1,
+                        clothParams.shearStiffness, clothParams.shearDamping);
                     i++;
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x - 1), -1);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), (y + 1) * (this.dynamicGrid.xSize + 1) + (x - 1), -1,
+                        clothParams.shearStiffness, clothParams.shearDamping);
                     i++;
                 }
             }
         }
 
         // Add also structural springs
-        float springW = 0.1f;
         for (int y = 0; y <= this.dynamicGrid.ySize; y++)
         {
             for (int x = 0; x <= this.dynamicGrid.xSize; x++)
             {
                 if (x < this.dynamicGrid.xSize)
                 {
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + 1 + y * (this.dynamicGrid.xSize + 1), -1, springW);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + 1 + y * (this.dynamicGrid.xSize + 1), -1,
+                        clothParams.structuralStiffness, clothParams.structuralDamping);
                     i++;
                 }
 
                 if (y < this.dynamicGrid.xSize)
                 {
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + (y + 1) * (this.dynamicGrid.xSize + 1), -1, springW);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + (y + 1) * (this.dynamicGrid.xSize + 1), -1,
+                        clothParams.structuralStiffness, clothParams.structuralDamping);
                     i++;
                 }
 
             }
         }
 
-        springW = 0.0075f;
         // Add bending springs
         for (int y = 0; y <= this.dynamicGrid.ySize; y++)
         {
@@ -195,18 +244,20 @@ public class Cloth : MonoBehaviour
             {
                 if (x < this.dynamicGrid.xSize-1)
                 {
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + 2 + y * (this.dynamicGrid.xSize + 1), -1, springW);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + 2 + y * (this.dynamicGrid.xSize + 1), -1,
+                        clothParams.bendStiffness, clothParams.bendDamping);
                     i++;
                 }
 
                 if (y < this.dynamicGrid.ySize-1)
                 {
-                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + (y + 2) * (this.dynamicGrid.xSize + 1), -1, springW);
+                    this.distTuples[i] = new DistTuple(x + y * (this.dynamicGrid.xSize + 1), x + (y + 2) * (this.dynamicGrid.xSize + 1), -1,
+                        clothParams.bendStiffness, clothParams.bendDamping);
                     i++;
                 }
-
             }
         }
+
     }
 
     private void CreateDistanceConstraintsBasedOnMesh()
@@ -226,21 +277,6 @@ public class Cloth : MonoBehaviour
         }
         Debug.Log("FINISH CREATING " + totElements + " CONSTRAINTS");
     }
-
-    //private void CreateDistanceConstraintsBasedOnMesh()
-    //{
-    //    this.distTuples = new DistTuple[this.mesh.vertexCount];
-
-    //    for (int i = 0; i < this.mesh.vertexCount; i++)
-    //    {
-    //        if (i > 0)
-    //            this.distTuples[i - 1] = new DistTuple(i, i-1, -1);
-    //        if (i < this.mesh.vertexCount - 1)
-    //            this.distTuples[i + 1] = new DistTuple(i, i+1, -1);
-    //    }
-    //    Debug.Log("FINISH CREATING " + this.mesh.vertexCount + " CONSTRAINTS");
-    //}
-
 
 
     //------------------------
