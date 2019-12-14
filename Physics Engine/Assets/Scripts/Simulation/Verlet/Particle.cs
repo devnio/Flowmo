@@ -10,10 +10,9 @@ public class Particle
     [HideInInspector]
     public Vector3 prevPosition;
     //[HideInInspector]
-    public float invMass;
-
     public Vector3 velocity;
 
+    public float invMass = 1f;
     public float mass = 1f;
 
     public Particle(Vector3 position, float mass, float invMass = 1f)

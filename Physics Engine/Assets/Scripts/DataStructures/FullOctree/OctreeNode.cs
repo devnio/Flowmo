@@ -10,7 +10,7 @@ public class OctreeNode
     // FIELDS
     // ===============
     public static int maxObjectLimit = 1;  // max amount of objects in this node (otherwise split)
-    private static int maxDepth = 2;
+    private static int maxDepth = 3;
 
     private int nodeDepth;
     private string name;
@@ -211,20 +211,20 @@ public class OctreeNode
         }
 
         // TODO: ADDED [CHECK PERFORMANCE] Update all the contained items for the new tree structure before clearing this node
-        //foreach (OctreeItem oi in containedItems)
-        //{
-        //    foreach (OctreeNode childNode in childrenNodes)
-        //    {
-        //        // TODO: after fix, try swapping this comment/uncomment group
-        //        if (childNode.ProcessItem(oi))
-        //        {
-        //            return;
-        //        }
-        //        //childNode.ProcessItem(oi);
-        //        Logger.Instance.DebugInfo("Split(): created 8 childs -> processing item " + oi.name + " in the node " + childNode.GetName(), "OCTREE NODE");
+        foreach (OctreeItem oi in containedItems)
+        {
+            foreach (OctreeNode childNode in childrenNodes)
+            {
+                // TODO: after fix, try swapping this comment/uncomment group
+                if (childNode.ProcessItem(oi))
+                {
+                    return;
+                }
+                //childNode.ProcessItem(oi);
+                Logger.Instance.DebugInfo("Split(): created 8 childs -> processing item " + oi.name + " in the node " + childNode.GetName(), "OCTREE NODE");
 
-        //    }
-        //}
+            }
+        }
 
         containedItems.Clear();
     }
@@ -263,7 +263,7 @@ public class OctreeNode
                         //return true;
                         proc = true;
                     }
-                    //childNode.ProcessItem(item);
+                    childNode.ProcessItem(item);
                 }
 
                 // TODO: DEBUG (comment later)

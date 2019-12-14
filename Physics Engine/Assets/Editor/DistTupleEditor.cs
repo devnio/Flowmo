@@ -15,12 +15,10 @@ public class DistTupleEditor : PropertyDrawer
         var springD = property.FindPropertyRelative("springD");
 
         label.text = "Distance Constraint";
-        rect.y += 20f;
         Rect contentPosition = EditorGUI.PrefixLabel(rect, label);
-        float initX = contentPosition.x;
-        EditorGUIUtility.labelWidth = 50;
+        EditorGUIUtility.labelWidth = 40;
 
-        contentPosition.width /= 4f;
+        contentPosition.width /= 5f;
 
         particle1.intValue = EditorGUI.IntField(contentPosition, "P1: ", particle1.intValue);
         contentPosition.x += contentPosition.width;

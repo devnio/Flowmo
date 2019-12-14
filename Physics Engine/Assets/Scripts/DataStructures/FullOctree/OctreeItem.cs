@@ -15,10 +15,13 @@ public class OctreeItem : MonoBehaviour
 
     void Start()
     {
-        Transform child = this.transform.GetChild(0);
-        if (child != null)
+        if (this.transform.childCount > 0)
         {
-            this.textDebugMesh = child.GetComponent<TextMesh>();
+            Transform child = this.transform.GetChild(0);
+            if (child != null)
+            {
+                this.textDebugMesh = child.GetComponent<TextMesh>();
+            }
         }
         
         prevPos = transform.position;

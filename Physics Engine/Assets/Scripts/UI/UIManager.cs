@@ -23,7 +23,10 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        //fps.text = string.Format("{0:0.00}", (1f / Time.deltaTime));
+        if (fps != null)
+        {
+            fps.text = string.Format("{0:0.00}", (1f / Time.deltaTime));
+        }
     } 
 
 }

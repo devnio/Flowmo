@@ -46,17 +46,17 @@ public class CollisionManager : Singleton<CollisionManager>
         //=======
         // Octree
         //=======
-        OctreeNode.Init();
+        //OctreeNode.Init();
 
-        // Update in Octree
-        foreach (BaseCollider bc in this.Colliders)
-        {
-            OctreeItem oi = bc.GetComponent<OctreeItem>();
-            if (oi != null)
-            {
-                oi.RefreshOwners();
-            }
-        }
+        //// Update in Octree
+        //foreach (BaseCollider bc in this.Colliders)
+        //{
+        //    OctreeItem oi = bc.GetComponent<OctreeItem>();
+        //    if (oi != null)
+        //    {
+        //        oi.RefreshOwners();
+        //    }
+        //}
 
         //=======
         // Debug
@@ -81,127 +81,65 @@ public class CollisionManager : Singleton<CollisionManager>
 
     public void DetectCollisions()
     {
-
-        foreach (OctreeNode octNode in OctreeNode.NodesToCheckForCollision)
+        // TODO: Spatial structure.
+        int count = Colliders.Count;
+        for (int i = 0; i < count; i++)
         {
-            OctreeItem[] octreeItems = octNode.containedItems.ToArray();
-            for (int i = 0; i < octreeItems.Length; i++)
+            for (int j = i + 1; j < count; j++)
             {
-                for (int j = i + 1; j < octreeItems.Length; j++)
+                // OBB vs OBB
+                if (Colliders[i] as ColliderBox != null && Colliders[j] as ColliderBox != null)
                 {
-                    OctreeItem oi0 = octreeItems[i];
-                    OctreeItem oi1 = octreeItems[j];
-
-
-                    if (oi0.sphereCollider != null && oi1.sphereCollider != null)
+                    if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
                     {
-                        //SPHERE vs SPHERE
-                        SphereCollider s0 = oi0.sphereCollider;
-                        SphereCollider s1 = oi1.sphereCollider;
+                        // Collision Resolution
+                        CollisionResolutionOBB((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
 
-                        if (AreSpheresColliding(s0, s1))
+                        Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
+                                                    Colliders[i].Id + " - " +
+                                                    Colliders[j].Id + " !",
+                                                    "COLLISION_MANAGER");
+                    }
+                }
+
+                // SPHERE vs SPHERE
+                else if (Colliders[i] as SphereCollider != null && Colliders[j] as SphereCollider != null)
+                {
+                    if (AreSpheresColliding((SphereCollider)Colliders[i], (SphereCollider)Colliders[j]))
+                    {
+                        Logger.Instance.DebugInfo("Collision happened [Sphere vs Sphere]: " +
+                                                    Colliders[i].Id + " - " +
+                                                    Colliders[j].Id + " !",
+                                                    "COLLISION_MANAGER");
+                    }
+                }
+
+                // OBB vs SPHERE
+                else
+                {
+                    ColliderBox b = Colliders[i] as ColliderBox;
+                    SphereCollider s = Colliders[j] as SphereCollider;
+
+                    if (b == null)
+                    {
+                        b = Colliders[j] as ColliderBox;
+                        s = Colliders[i] as SphereCollider;
+                    }
+
+                    if (b != null && s != null)
+                    {
+                        if (AreSphereOBBColliding(b, s))
                         {
-                            Logger.Instance.DebugInfo("Collision happened [Sphere vs Sphere]: " +
+                            Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
                                                         Colliders[i].Id + " - " +
                                                         Colliders[j].Id + " !",
                                                         "COLLISION_MANAGER");
-                        }
-                    }
-
-                    else
-                    {
-                        //OBB vs SPHERE
-                        SphereCollider s;
-                        ColliderBox b;
-
-                        if (oi0.sphereCollider != null)
-                        {
-                            s = oi0.sphereCollider;
-                            b = oi1.colliderBox;
-                        }
-                        else
-                        {
-                            s = oi1.sphereCollider;
-                            b = oi0.colliderBox;
-                        }
-                        if (b != null && s != null)
-                        {
-                            //Debug.Log(octreeItems.Length);
-                            if (AreSphereOBBColliding(b, s))
-                            {
-                                Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
-                                                            Colliders[i].Id + " - " +
-                                                            Colliders[j].Id + " !",
-                                                            "COLLISION_MANAGER");
-                            }
                         }
                     }
                 }
             }
         }
     }
-
-    //public void DetectCollisions()
-    //{
-    //    // TODO: Spatial structure.
-    //    int count = Colliders.Count;
-    //    for (int i = 0; i < count; i++)
-    //    {
-    //        for (int j = i + 1; j < count; j++)
-    //        {
-    //            // OBB vs OBB
-    //            if (Colliders[i] as ColliderBox != null && Colliders[j] as ColliderBox != null)
-    //            {
-    //                if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
-    //                {
-    //                    // Collision Resolution
-    //                    CollisionResolutionOBB((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
-
-    //                    Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
-    //                                                Colliders[i].Id + " - " +
-    //                                                Colliders[j].Id + " !",
-    //                                                "COLLISION_MANAGER");
-    //                }
-    //            }
-
-    //            // SPHERE vs SPHERE
-    //            else if (Colliders[i] as SphereCollider != null && Colliders[j] as SphereCollider != null)
-    //            {
-    //                if (AreSpheresColliding((SphereCollider)Colliders[i], (SphereCollider)Colliders[j]))
-    //                {
-    //                    Logger.Instance.DebugInfo("Collision happened [Sphere vs Sphere]: " +
-    //                                                Colliders[i].Id + " - " +
-    //                                                Colliders[j].Id + " !",
-    //                                                "COLLISION_MANAGER");
-    //                }
-    //            }
-
-    //            // OBB vs SPHERE
-    //            else
-    //            {
-    //                ColliderBox b = Colliders[i] as ColliderBox;
-    //                SphereCollider s = Colliders[j] as SphereCollider;
-
-    //                if (b == null)
-    //                {
-    //                    b = Colliders[j] as ColliderBox;
-    //                    s = Colliders[i] as SphereCollider;
-    //                }
-
-    //                if (b != null && s != null)
-    //                {
-    //                    if (AreSphereOBBColliding(b, s))
-    //                    {
-    //                        Logger.Instance.DebugInfo("Collision happened [OBB vs Sphere]: " +
-    //                                                    Colliders[i].Id + " - " +
-    //                                                    Colliders[j].Id + " !",
-    //                                                    "COLLISION_MANAGER");
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
 
     //---------------------------------
     // Collision Methods
@@ -222,7 +160,7 @@ public class CollisionManager : Singleton<CollisionManager>
             // Update the dynamic object
             for (int i = 0; i < 4; i++)
             {
-                ob1.particles[i].position = ob1.particles[i].position + lambda1 * c1[i] * (projPoint - currPoint);
+                ob1.particles[i].position = ob1.particles[i].position + (lambda1 * c1[i] * (projPoint - currPoint)) * ob1.particles[i].invMass;
             }
             Logger.Instance.DebugParticleCoefficients(currPoint, c1, "COEFFICIENTS");
         }
@@ -236,8 +174,8 @@ public class CollisionManager : Singleton<CollisionManager>
             // Update the dynamic object
             for (int i = 0; i < 4; i++)
             {
-                ob1.particles[i].position = ob1.particles[i].position + lambda2 * c1[i] * (projPoint - currPoint) * 0.5f;
-                ob2.particles[i].position = ob2.particles[i].position + lambda2 * c2[i] * (currPoint - projPoint) * 0.5f;
+                ob1.particles[i].position = ob1.particles[i].position + (lambda1 * c1[i] * (projPoint - currPoint) * 0.5f) * ob1.particles[i].invMass;
+                ob2.particles[i].position = ob2.particles[i].position + (lambda2 * c2[i] * (currPoint - projPoint) * 0.5f) * ob2.particles[i].invMass;
             }
             Logger.Instance.DebugParticleCoefficients(currPoint, c1, "COEFFICIENTS 1");
             Logger.Instance.DebugParticleCoefficients(projPoint, c2, "COEFFICIENTS 2");
@@ -561,7 +499,7 @@ public class CollisionManager : Singleton<CollisionManager>
     {
         // Find min penetration axis
         AreOBBsColliding(b1, b2, true);
-        ShowCurrentSeparatingPlane();
+        //ShowCurrentSeparatingPlane();
 
         // TODO: Assume the first object has the particle object (REMOVE THIS ASSUMPTION)
         // CASE OF VERTEX
@@ -633,110 +571,3 @@ public enum CollType
 
 
 
-
-
-
-// ===================
-// OLD: TESTING STUFF
-// ===================
-
-/// <summary>
-/// Checks if there is a separating axis between the two colliders.
-/// Returns true if there is a separating axis (no collision).
-/// </summary>
-/// <param name="cacheAxis"> If the given axis is separating cache this in the system (faster for next round).
-/// This is False if we need to convalidate the previous stored one (don't add 2 times).</param>
-/// <param name="cacheColResolution"> When active we store the MTV and MTD. </param>
-/// <param name="ax"></param>
-/// <returns></returns>
-//private bool SeparatingAxisCheck(ColliderBox b1, ColliderBox b2, Vector3 ax, bool cacheAxis = true, bool cacheColResolution = false, CollType collType = CollType.Vertex)
-//{
-//    if (ax == Vector3.zero) return false;
-
-//    Vector3 axis = ax;
-
-//    axis.Normalize();
-
-//    Cube c1 = b1.cube;
-//    Cube c2 = b2.cube;
-
-//    float c1Max = float.MinValue;
-//    float c1Min = float.MaxValue;
-//    float c2Max = float.MinValue;
-//    float c2Min = float.MaxValue;
-
-//    // TODO: only testing something
-//    int c1_idx_max = 0;
-//    int c1_idx_min = 0;
-//    int c2_idx_max = 0;
-//    int c2_idx_min = 0;
-
-//    // Assume b1 is more positive on the axis than b2
-//    if (Vector3.Dot(b1._center - b2._center, axis) < 0f) axis *= -1;
-
-//    // Project points from cubes to ax. Find extreme points in the axis.
-//    for (int i = 0; i < 8; i++)
-//    {
-//        // Project point to axis;
-//        float c1Proj = Vector3.Dot(c1.vertices[i], axis);
-//        float c2Proj = Vector3.Dot(c2.vertices[i], axis);
-
-//        if (c1Max < c1Proj)
-//        {
-//            c1Max = c1Proj;
-//            c1_idx_max = i;
-//        }
-//        if (c1Min > c1Proj)
-//        {
-//            c1Min = c1Proj;
-//            c1_idx_min = i;
-//        }
-//        if (c2Max < c2Proj)
-//        {
-//            c2Max = c2Proj;
-//            c2_idx_max = i;
-//        }
-//        if (c2Min > c2Proj)
-//        {
-//            c2Min = c2Proj;
-//            c2_idx_min = i;
-//        }
-//        //c1Max = Mathf.Max(c1Max, c1Proj);
-//        //c1Min = Mathf.Min(c1Min, c1Proj);
-//        //c2Max = Mathf.Max(c2Max, c2Proj);
-//        //c2Min = Mathf.Min(c2Min, c2Proj);
-//    }
-
-//    var max = Mathf.Max(c1Max, c2Max);
-//    var min = Mathf.Min(c1Min, c2Min);
-
-//    float longSpan = max - min;
-//    float overlapSpan = c1Max - c1Min + c2Max - c2Min;
-
-//    bool noCollision = longSpan > overlapSpan;
-//    // if no collision happened (found a separating axis) cache the separating axis
-//    if (noCollision && cacheAxis && !cacheColResolution) CachedSeparatingAxis.Add(GetCachedSeparatingAxisID(b1.Id, b2.Id), axis);
-
-//    // we already know a collision happened and try to find min penetration axis for projection
-//    if (cacheColResolution && !noCollision)
-//    {
-//        float val = overlapSpan - longSpan;
-//        if (val >= 0 && val < this.currentMinPenetrationDistance && axis != Vector3.zero)
-//        {
-//            // TODO: this is only testing 
-//            // //===
-//            DebugSpheresContactObb = new List<Vector3>();
-//            DebugSpheresContactObb.Add(c1.vertices[c1_idx_min]);
-//            // ===//
-
-//            this.currentMinPenetrationDistance = val;
-//            this.currentMinPenetrationAxis = axis;
-//            this.currentCollType = collType;
-//            Debug.Log("FOUND MIN AXIS");
-//            Debug.Log(val);
-//            Debug.Log(axis);
-//        }
-//    }
-
-//    return noCollision;
-//}

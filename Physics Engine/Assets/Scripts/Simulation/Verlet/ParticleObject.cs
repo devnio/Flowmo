@@ -35,6 +35,7 @@ public class ParticleObject : MonoBehaviour
 
     public Particle[] particles; // relative to center of mass
     public DistTuple[] distTuples;
+    public PointTuple[] pointTuples;
 
     private Vector3 frictionVector;
     public bool ShowVelocityArrows;
@@ -56,33 +57,13 @@ public class ParticleObject : MonoBehaviour
         // Check if there is a collider
         if (this.gameObject.GetComponent<BaseCollider>() != null)
         {
-            BaseCollider[] baseColliders = this.gameObject.GetComponents<BaseCollider>();
-
-            // if more than one, then take the sphere collider
-            if (baseColliders.Length > 1)
-            {
-                if (baseColliders[0] as SphereCollider != null)
-                {
-                    this.Collider = baseColliders[0];
-                }
-                else
-                {
-                    this.Collider = baseColliders[1];
-                }
-            }
-            else
-            {
-                this.Collider = baseColliders[0];
-
-            }
-
+            this.Collider = this.gameObject.GetComponent<BaseCollider>();
             this.Collider.AssignParticleObject(this);
         }
 
         // Initialize prev pos as current one and invmass
         foreach (Particle p in particles) {
             p.position = this.transform.TransformPoint(p.position);
-            //p.invMass = 1f / p.mass;
             p.prevPosition = p.position - velocity / 10f;
 
             // For visualizer
@@ -92,11 +73,12 @@ public class ParticleObject : MonoBehaviour
         // Add Tetrahederon and Bounding constraints 
         constraints = new List<Constraint>();
         constraints.Add(new DistanceConstraint(particles, distTuples));
+        constraints.Add(new PointConstraint(particles, pointTuples));
         //constraints.Add(new BoundConstraint(particles, new Vector3(10, 5, 10)));
 
         // Initialize center position
         this.centerOfMass = this.ComputeCenterOfMass();
-        this.SetOrientationAxis();
+        this.SetOrientationAxis();  //TODO: add back -> create GummyObject
 
         // Add object to simulation
         VerletSimulation.Instance.AddParticleObject(this);
@@ -104,6 +86,10 @@ public class ParticleObject : MonoBehaviour
         // Initialize acceleration
         gravityAcceleraiton = new Vector3(0, -9.81f, 0);
         if (this.UseGravity) acceleration += gravityAcceleraiton;
+
+        //// Move Particle
+        //this.particles[2].position += new Vector3(1,1,0) * 3f;
+        //this.particles[1].position += new Vector3(1,1,0) * 1.5f;
     }
 
     /// <summary>
@@ -127,7 +113,7 @@ public class ParticleObject : MonoBehaviour
                 foreach (Particle p in particles)
                 {
                     Vector3 temp = p.position;
-                    p.position += p.position - p.prevPosition + acceleration * dt * dt;
+                    p.position += p.position - p.prevPosition + (acceleration * dt * dt) * p.invMass;
                     p.prevPosition = temp;
 
                 }
@@ -157,10 +143,13 @@ public class ParticleObject : MonoBehaviour
         this.transform.position = this.centerOfMass;
 
         // bring object to coordinate frame of tetrahedron
-        this.UpdateGameObjectOrientation();
+        this.UpdateGameObjectOrientation(); // TODO: when merging add this back -> make a new GummyObject
 
         // move collider on spot based on current transform
-        this.Collider.UpdateColliderPose(Vector3.zero);
+        if (this.Collider != null)
+        {
+            this.Collider.UpdateColliderPose(Vector3.zero);
+        }
     }
 
     private Vector3 ComputeCenterOfMass(bool transformToLocalFirst = false)

@@ -29,7 +29,7 @@ public class CameraMovement : MonoBehaviour
             newCube.name = "ITEM_" + counter;
             counter++;
             newCube.transform.position = this.transform.position + transform.forward * 6f;
-            //newCube.GetComponent<OctreeItem>().RefreshOwners();
+            newCube.GetComponent<OctreeItem>().RefreshOwners();
         }
 
         RaycastHit hit;

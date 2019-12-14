@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.4208909, g: 0.71482235, b: 0.8809126, a: 1}
+  m_IndirectSpecularColor: {r: 0.42101374, g: 0.714805, b: 0.8810152, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -326,6 +326,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StopSimulation: {fileID: 564900303}
   NextFrame: {fileID: 2096647386}
+  fps: {fileID: 0}
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -798,6 +799,8 @@ MonoBehaviour:
   _timeScale: 1
   ConstraintIterations: 5
   ParticleObjects: []
+  SoftBodyObjects: []
+  ClothObjects: []
   _stopSimulation: 0
 --- !u!1 &1379738642
 GameObject:
@@ -865,6 +868,7 @@ MonoBehaviour:
   displaceCenter: {x: 0, y: 0, z: 0}
   _xyzLength: {x: 1.316, y: 1.099, z: 0.924}
   xyzLength: {x: 1.88, y: 1.57, z: 1.32}
+  AddToCollisionManager: 1
 --- !u!114 &1713305543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1021,6 +1025,7 @@ MonoBehaviour:
   displaceCenter: {x: 0, y: 0, z: 0}
   _xyzLength: {x: 10, y: 4, z: 10}
   xyzLength: {x: 1, y: 1, z: 1}
+  AddToCollisionManager: 1
 --- !u!23 &1750258205
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1303,6 +1308,7 @@ MonoBehaviour:
   displaceCenter: {x: 0, y: 0, z: 0}
   _xyzLength: {x: 1.064, y: 0.91699994, z: 0.861}
   xyzLength: {x: 1.52, y: 1.31, z: 1.23}
+  AddToCollisionManager: 1
 --- !u!1 &2096647384
 GameObject:
   m_ObjectHideFlags: 0
@@ -1566,6 +1572,56 @@ PrefabInstance:
     - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
       propertyPath: ShowVelocityArrows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: particles.Array.data[3].invMass
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: particles.Array.data[1].invMass
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: particles.Array.data[0].invMass
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: particles.Array.data[2].invMass
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: distTuples.Array.data[0].springW
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: distTuples.Array.data[1].springW
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: distTuples.Array.data[2].springW
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: distTuples.Array.data[3].springW
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: distTuples.Array.data[4].springW
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3049257999235426221, guid: 47598f090a8dc5340966bd5d092f0456,
+        type: 3}
+      propertyPath: distTuples.Array.data[5].springW
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3049257999235426223, guid: 47598f090a8dc5340966bd5d092f0456,
