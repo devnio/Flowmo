@@ -49,6 +49,11 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         SatisfyConstraints(this.ConstraintIterations);
     }
 
+    /// <summary>
+    /// Updates the particles based on the integrator they use.
+    /// This method should consider all type of objects that we have implemented until now.
+    /// </summary>
+    /// <param name="dt"></param>
     public void UpdateParticles(float dt)
     {
         // PARTICLE OBJ
@@ -70,6 +75,11 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         }
     }
 
+
+    /// <summary>
+    /// Satisfy the constraints of each particle object that is considered in the simulation.
+    /// </summary>
+    /// <param name="iterations"></param>
     public void SatisfyConstraints(int iterations)
     {
         // PARTICLE OBJ

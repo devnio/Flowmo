@@ -65,10 +65,9 @@ public class ParticleObject : MonoBehaviour
         foreach (Particle p in particles) {
             p.position = this.transform.TransformPoint(p.position);
             p.prevPosition = p.position - velocity / 10f;
-
-            // For visualizer
-            E_pointsTransformedInLocalSpace = true;
         }
+        // For visualizer
+        E_pointsTransformedInLocalSpace = true;
 
         // Add Tetrahederon and Bounding constraints 
         constraints = new List<Constraint>();
@@ -78,7 +77,7 @@ public class ParticleObject : MonoBehaviour
 
         // Initialize center position
         this.centerOfMass = this.ComputeCenterOfMass();
-        this.SetOrientationAxis();  //TODO: add back -> create GummyObject
+        this.SetOrientationAxis();  
 
         // Add object to simulation
         VerletSimulation.Instance.AddParticleObject(this);
@@ -86,21 +85,6 @@ public class ParticleObject : MonoBehaviour
         // Initialize acceleration
         gravityAcceleraiton = new Vector3(0, -9.81f, 0);
         if (this.UseGravity) acceleration += gravityAcceleraiton;
-
-        //// Move Particle
-        //this.particles[2].position += new Vector3(1,1,0) * 3f;
-        //this.particles[1].position += new Vector3(1,1,0) * 1.5f;
-    }
-
-    /// <summary>
-    /// Resets implicit velocity by changing prevPos. Not used now.
-    /// </summary>
-    public void ResetVelocity()
-    {
-        foreach (Particle p in particles)
-        {
-            p.prevPosition = p.position;
-        }
     }
 
     public void UpdateStep(float dt)
@@ -123,7 +107,7 @@ public class ParticleObject : MonoBehaviour
         }
     }
 
-    public void SatisfyConstraints(int iterations = 1)
+    public void SatisfyConstraints()
     {
         foreach (Constraint c in constraints)
         {
@@ -143,7 +127,7 @@ public class ParticleObject : MonoBehaviour
         this.transform.position = this.centerOfMass;
 
         // bring object to coordinate frame of tetrahedron
-        this.UpdateGameObjectOrientation(); // TODO: when merging add this back -> make a new GummyObject
+        this.UpdateGameObjectOrientation(); 
 
         // move collider on spot based on current transform
         if (this.Collider != null)
