@@ -42,11 +42,14 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         // Update RigidBodies
         UpdateParticles(dt);
 
-        // Detect Collisions
-        CollisionManager.Instance.DetectCollisions();
+        for (int i = 0; i < this.ConstraintIterations; i++)
+        {
+            // Detect Collisions
+            CollisionManager.Instance.DetectAndResolveCollisions();
 
-        // Satisfy Constraints
-        SatisfyConstraints(this.ConstraintIterations);
+            // Satisfy Constraints
+            SatisfyConstraints(1);
+        }
     }
 
     /// <summary>

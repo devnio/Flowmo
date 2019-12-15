@@ -38,11 +38,16 @@ public class Cloth : MonoBehaviour
     public bool ShowVelocityArrows;
     private GameObject[] VelocityArrows_DB;
 
+    private SphereCollider[] sphereColliders;
+
     private MeshFilter meshFilter;
     private Mesh mesh;
     public DynamicGrid dynamicGrid;
 
     public ClothParameters clothParams;
+
+    public float clothTileSizeMult;
+    public float clothSphereColliderSize;
 
     private void Start()
     {
@@ -64,8 +69,7 @@ public class Cloth : MonoBehaviour
     // Used in the UI
     public void GenerateCloth()
     {
-
-        this.dynamicGrid.Generate(this.clothParams.clothSize);
+        this.dynamicGrid.Generate(this.clothParams.clothSize, this.clothTileSizeMult);
         this.mesh = this.meshFilter.mesh;
         this.CreateParticlesAndConstraints();
         this.InitializeConstraints();
@@ -77,6 +81,11 @@ public class Cloth : MonoBehaviour
         this.meshFilter.mesh = null;
         this.particles = null;
         this.constraints = null;
+        foreach (SphereCollider sp in this.sphereColliders)
+        {
+            Destroy(sp);
+        }
+        this.sphereColliders = null;
     }
 
     /// <summary>
@@ -144,6 +153,7 @@ public class Cloth : MonoBehaviour
         for (int i = 0; i < this.particles.Length; i++)
         {
             newVertices[i] = this.particles[i].position;
+            sphereColliders[i].UpdateColliderPose(Vector3.zero);
         }
 
         this.mesh.vertices = newVertices;
@@ -161,9 +171,17 @@ public class Cloth : MonoBehaviour
     private void CreateParticlesBasedOnMesh()
     {
         this.particles = new Particle[this.mesh.vertexCount];
+        this.sphereColliders = new SphereCollider[this.mesh.vertexCount];
         for (int i = 0; i < this.mesh.vertexCount; i++)
         {
             this.particles[i] = new Particle(this.mesh.vertices[i], 1f);
+
+            // Add sphere colliders
+            SphereCollider sp = this.gameObject.AddComponent<SphereCollider>();
+            sp.AssignSingleParticle(this.particles[i]);
+            sp.isSingleParticle = true;
+            sp.Radius = clothSphereColliderSize;
+            this.sphereColliders[i] = sp;
 
             // Clamp end particles
             if (i == (this.dynamicGrid.xSize+1) * this.dynamicGrid.ySize || i == ((this.dynamicGrid.xSize + 1) * (this.dynamicGrid.ySize + 1)-1))

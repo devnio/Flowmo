@@ -16,6 +16,11 @@ public class SoftBody : MonoBehaviour
     public List<Constraint> constraints;
 
     private Vector3 gravityAcceleraiton;
+
+    [Header("Soft Body Parameters")]
+    public float spring_k = 0.5f;
+    public float damp = 0.5f;
+
     public bool UseGravity = true;
     public Vector3 acceleration;
     public Vector3 velocity;
@@ -28,6 +33,7 @@ public class SoftBody : MonoBehaviour
 
     private MeshFilter meshFilter;
     private Mesh mesh;
+
 
     private void Start()
     {
@@ -83,6 +89,9 @@ public class SoftBody : MonoBehaviour
             Vector3 temp = p.position;
             p.position += p.position - p.prevPosition + acceleration * dt * dt;
             p.prevPosition = temp;
+
+            // Update velocity used (only for damping now)
+            p.velocity = p.position - p.prevPosition;
         }
         UpdateSoftBodyMesh();
     }
@@ -100,7 +109,7 @@ public class SoftBody : MonoBehaviour
         Vector3[] newVertices = new Vector3[this.particles.Length];
         for (int i = 0; i < this.particles.Length; i++)
         {
-            newVertices[i] = this.particles[i].position;
+            newVertices[i] = this.transform.InverseTransformPoint(this.particles[i].position);
         }
 
         this.mesh.vertices = newVertices;
@@ -119,7 +128,7 @@ public class SoftBody : MonoBehaviour
         this.particles = new Particle[this.mesh.vertexCount];
         for (int i = 0; i < this.mesh.vertexCount; i++)
         {
-            this.particles[i] = new Particle(this.mesh.vertices[i], 1f);
+            this.particles[i] = new Particle(this.transform.TransformPoint(this.mesh.vertices[i]), 1f);
         }
     }
 
@@ -134,7 +143,7 @@ public class SoftBody : MonoBehaviour
             for (int j = i + 1; j < this.mesh.vertexCount; j++)
             {
                 //Debug.Log("i: " + i + ", j: " + j + ", sum : " + sum + ", idx: "  + (sum + j - 1));
-                this.distTuples[sum + j - 1] = new DistTuple(i, j, -1);
+                this.distTuples[sum + j - 1] = new DistTuple(i, j, -1, this.spring_k, this.damp);
             }
             sum += this.mesh.vertexCount - i - 2;
         }

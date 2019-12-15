@@ -43,7 +43,7 @@ public class UIClothManager : Singleton<UIClothManager>
     private void Start()
     {
         // Setup default values
-        clothResolution_Slider.value = 0.4f;
+        clothResolution_Slider.value = 0.2f;
 
         structuralStiffness_Slider.value = 0.8f;
         bendStiffness_Slider.value = 0.8f;
@@ -82,7 +82,7 @@ public class UIClothManager : Singleton<UIClothManager>
 
     public void Slider_ClothResolution_Changed()
     {
-        int sliderValue = (int)(clothResolution_Slider.value * 20f);
+        int sliderValue = Mathf.Clamp((int)(clothResolution_Slider.value * 20f), 3, 20);
         clothResolution_SliderText.text = sliderValue.ToString();
         cloth.clothParams.clothSize = sliderValue;
     }

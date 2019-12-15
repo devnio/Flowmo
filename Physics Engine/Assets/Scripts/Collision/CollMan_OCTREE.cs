@@ -205,7 +205,7 @@ public class CollManOctree : Singleton<CollisionManager>
     /// If ob2 is null only ob1 is moved out. Be careful to pass the right currPoint and projPoint.
     /// </summary>
     private void SeparateParticleObjects(ParticleObject ob1, Vector3 currPoint, Vector3 projPoint,
-        ParticleObject ob2 = null, CollisionResolution_Type collResType=CollisionResolution_Type.BothRigidBodies)
+        ParticleObject ob2 = null)
     {
         // Update particles to move out
         float[] c1 = this.ComputeParticlesCoefficients(ob1, currPoint);

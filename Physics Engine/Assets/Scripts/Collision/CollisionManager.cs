@@ -6,10 +6,11 @@ using Accord.Math;
 
 using Vector3 = UnityEngine.Vector3;
 
-enum CollisionResolution_Type
+enum ColliderTypes
 {
     BothRigidBodies,
-    FirstRigidBody_SecondSingleParticle    
+    FirstRigidBody_SecondSingleParticle,
+    BothSingleParticles
 }
 
 public class CollisionManager : Singleton<CollisionManager>
@@ -26,6 +27,11 @@ public class CollisionManager : Singleton<CollisionManager>
     //---------------------------------
     public List<BaseCollider> Colliders;
     public Dictionary<int, Vector3> CachedSeparatingAxis;
+
+    // This list is for the sphere colliders attached to only one particle (e.g. cloth particles)
+    public List<SphereCollider> SingleParticleColliders;
+    public bool checkSingleParticleCollisions;
+
 
     // Collision resolution values of current check
     // Be careful to always set these values before using them.
@@ -68,20 +74,66 @@ public class CollisionManager : Singleton<CollisionManager>
         }
     }
 
-    public void AddCollider(BaseCollider Collider)
+    public void AddCollider(BaseCollider Collider, bool isSingleParticle = false)
     {
         if (Colliders == null)
         {
-            Colliders = new List<BaseCollider>();
+            this.Colliders = new List<BaseCollider>();
+            this.SingleParticleColliders = new List<SphereCollider>();
         }
-        Colliders.Add(Collider);
+
+        if (!isSingleParticle)
+        {
+            this.Colliders.Add(Collider);
+        }
+        else
+        {
+            this.SingleParticleColliders.Add((SphereCollider)Collider);
+        }
 
         Logger.Instance.DebugInfo("Added Collider " + Collider.Id + " to CollisionManager!");
     }
 
-    public void DetectCollisions()
+    public void DetectAndResolveCollisions()
     {
-        // TODO: Spatial structure.
+        this.CollidersCollisions();
+        this.ColliderAndSingleParticleCollisions();
+        if (checkSingleParticleCollisions)
+        {
+            // TODO: this.SingleParticleCollisions()
+        }
+    }
+
+
+    private void ColliderAndSingleParticleCollisions()
+    {
+        int collidersCount = this.Colliders.Count;
+        int sPCollidersCount = this.SingleParticleColliders.Count;
+
+        for (int i = 0; i < collidersCount; i++)
+        {
+            for (int j = 0; j < sPCollidersCount; j++)
+            {
+                // Sphere vs Sphere
+                if (Colliders[i] as SphereCollider != null)
+                {
+                    this.AreSpheresColliding((SphereCollider)this.Colliders[i], this.SingleParticleColliders[j], ColliderTypes.FirstRigidBody_SecondSingleParticle);
+                }
+
+                // Obb vs Sphere
+                if (Colliders[i] as ColliderBox != null)
+                {
+                    this.AreSphereOBBColliding((ColliderBox)this.Colliders[i], this.SingleParticleColliders[j], ColliderTypes.FirstRigidBody_SecondSingleParticle);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Checks and resolves the collision between particle object colliders.
+    /// </summary>
+    private void CollidersCollisions()
+    {
         int count = Colliders.Count;
         for (int i = 0; i < count; i++)
         {
@@ -140,16 +192,77 @@ public class CollisionManager : Singleton<CollisionManager>
             }
         }
     }
+    //-------------------------------------
+    // Collision Methods - Single Particle Colliders
+    //-------------------------------------
+    /// <summary>
+    /// Separate 2 objects where at least one is a SingleParticle object (SphereCollider).
+    /// </summary>
+    private void SeparateParticleObjectWithSingleParticles(BaseCollider bc, SphereCollider sp, Vector3 currPoint, Vector3 projPoint, ColliderTypes collTypes)
+    {
+        if (collTypes == ColliderTypes.FirstRigidBody_SecondSingleParticle)
+        {
+            ParticleObject po = bc.GetParticleObject();
+            float[] c1 = this.ComputeParticlesCoefficients(po, currPoint);
+            float lambda1 = this.ComputeLambda(c1);
+            Logger.Instance.DebugInfo("Updating FirstRigidBody_SecondSingleParticle object", "COLLISION");
 
-    //---------------------------------
-    // Collision Methods
-    //---------------------------------
+            // Update the dynamic object
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    po.particles[i].position = po.particles[i].position + (lambda1 * c1[i] * (projPoint - currPoint) * 0.5f) * po.particles[i].invMass;
+            //}
+
+            // Update also the single particle
+            Vector3 newPos = sp.GetSingleParticlePosition() - ((projPoint - currPoint)) * 0.5f * sp.GetSingleParticleInvMass();
+            sp.ChangeSingleParticlePosition(newPos);
+        }
+        // if both are single particle objects
+        else if (collTypes == ColliderTypes.BothSingleParticles)
+        {
+            // TODO: test
+            SphereCollider sp1 = (SphereCollider)bc;
+
+            Vector3 newPosSp1 = sp1.GetSingleParticlePosition() + ((projPoint - currPoint)) * sp1.GetSingleParticleInvMass();
+            sp1.ChangeSingleParticlePosition(newPosSp1);
+
+            Vector3 newPosSp2 = sp.GetSingleParticlePosition() - ((projPoint - currPoint)) * sp.GetSingleParticleInvMass();
+            sp.ChangeSingleParticlePosition(newPosSp2);
+        }
+    }
+
+    private void CollisionResolutionSphereWithSingleParticle(SphereCollider sp1, SphereCollider sp2, float distance, ColliderTypes collTypes)
+    {
+        Vector3 dir = sp2._center - sp1._center;
+        dir.Normalize();
+
+        Vector3 currPoint = sp1._center + dir * sp1.Radius;
+        Vector3 displace = dir * distance;
+        Vector3 projPoint = currPoint - displace;
+
+        this.SeparateParticleObjectWithSingleParticles(sp1, sp2, currPoint, projPoint, collTypes);
+    }
+
+    private void CollisionResolutionObbWithSingleParticle(ColliderBox cb, SphereCollider s, bool sphereInsideObb, ColliderTypes collTypes)
+    {
+        Vector3 temp = this.currentClosestPointOnObb - s._center;
+        float dirMult = sphereInsideObb ? -1 : 1;
+        Vector3 dir = temp.normalized * dirMult;
+
+        Vector3 currPoint = s._center + dir * s.Radius;
+        Vector3 projPoint = this.currentClosestPointOnObb;
+
+        this.SeparateParticleObjectWithSingleParticles(cb, s, projPoint, currPoint, collTypes);
+    }
+
+    //-------------------------------------
+    // Collision Methods - Particle Objects
+    //-------------------------------------
     /// <summary>
     /// Separate the 2 objects from the information got from the collision.
     /// If ob2 is null only ob1 is moved out. Be careful to pass the right currPoint and projPoint.
     /// </summary>
-    private void SeparateParticleObjects(ParticleObject ob1, Vector3 currPoint, Vector3 projPoint,
-        ParticleObject ob2 = null, CollisionResolution_Type collResType=CollisionResolution_Type.BothRigidBodies)
+    private void SeparateParticleObjects(ParticleObject ob1, Vector3 currPoint, Vector3 projPoint, ParticleObject ob2 = null)
     {
         // Update particles to move out
         float[] c1 = this.ComputeParticlesCoefficients(ob1, currPoint);
@@ -247,7 +360,7 @@ public class CollisionManager : Singleton<CollisionManager>
     //---------------------------------
     // OBB vs Sphere
     //---------------------------------
-    public bool AreSphereOBBColliding(ColliderBox b, SphereCollider s)
+    private bool AreSphereOBBColliding(ColliderBox b, SphereCollider s, ColliderTypes collTypes = ColliderTypes.BothRigidBodies)
     {
         Tuple<Vector3, bool> infoClosestPoint = Util.FindClosestPoint(b, s);
         this.currentClosestPointOnObb = infoClosestPoint.Item1;
@@ -256,7 +369,17 @@ public class CollisionManager : Singleton<CollisionManager>
         float distSphereObbPoint = (this.currentClosestPointOnObb - s._center).sqrMagnitude;
 
         bool collision = distSphereObbPoint < s.SqrRadius;
-        if (collision || sphereInsideObb) this.CollisionResolutionObbSphere(b, s, sphereInsideObb);
+        if (collision || sphereInsideObb)
+        {
+            if (collTypes == ColliderTypes.BothRigidBodies)
+            {
+                this.CollisionResolutionObbSphere(b, s, sphereInsideObb);
+            }
+            else
+            {
+                this.CollisionResolutionObbWithSingleParticle(b, s, sphereInsideObb, collTypes);
+            }
+        }
 
         return collision || sphereInsideObb;
     }
@@ -281,12 +404,10 @@ public class CollisionManager : Singleton<CollisionManager>
         }
     }
 
-    // TODO: Add function for moving particle objects between obb and sphere
-
     //---------------------------------
     // Sphere vs Sphere
     //---------------------------------
-    private bool AreSpheresColliding(SphereCollider sp1, SphereCollider sp2)
+    private bool AreSpheresColliding(SphereCollider sp1, SphereCollider sp2, ColliderTypes collTypes = ColliderTypes.BothRigidBodies)
     {
         // Compute distance vector
         Vector3 sp1_sp2 = sp1._center - sp2._center;
@@ -298,7 +419,14 @@ public class CollisionManager : Singleton<CollisionManager>
         // Resolve Collision
         if (colliding)
         {
-            this.CollisionResolutionSphere(sp1, sp2, overlapSpan - longSpan);
+            if (collTypes == ColliderTypes.BothRigidBodies)
+            {
+                this.CollisionResolutionSphere(sp1, sp2, overlapSpan - longSpan);
+            }
+            else
+            {
+                this.CollisionResolutionSphereWithSingleParticle(sp1, sp2, overlapSpan - longSpan, collTypes);
+            }
         }
 
         return colliding;
@@ -306,13 +434,12 @@ public class CollisionManager : Singleton<CollisionManager>
 
     private void CollisionResolutionSphere(SphereCollider sp1, SphereCollider sp2, float overlapDistance)
     {
-        // Assuming sp1 is dynamic.
-        Vector3 dir = sp1._center - sp2._center;
+        Vector3 dir = sp2._center - sp1._center;
         dir.Normalize();
 
         Vector3 currPoint = sp1._center + dir * sp1.Radius;
         Vector3 displace = dir * overlapDistance;
-        Vector3 projPoint = currPoint + displace;
+        Vector3 projPoint = currPoint - displace;
 
         if (!sp1.IsStatic() && !sp2.IsStatic())
         {

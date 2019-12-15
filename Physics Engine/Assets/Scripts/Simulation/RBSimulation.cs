@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// ===========
+// DEPRECATED
+// ===========
+
 // REMEMBER TO SET EXECUTION ORDER
 public class RBSimulation : Singleton<RBSimulation>, ISimulation
 {
@@ -49,7 +53,7 @@ public class RBSimulation : Singleton<RBSimulation>, ISimulation
     public void UpdateStepPhysics(float dt)
     {
         // TODO: Check Physics
-        CollisionManager.Instance.DetectCollisions();
+        CollisionManager.Instance.DetectAndResolveCollisions();
 
         // Update RigidBodies
         UpdateRigidBodies(dt);

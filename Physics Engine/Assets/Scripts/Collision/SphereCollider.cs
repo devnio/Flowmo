@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class SphereCollider : BaseCollider
 {
+    // Some variables used for the editor
     private bool isRunning;
     private float _initialMaxScale;
     private float _assignedRadius;
+
+    public bool isSingleParticle;
+    private Particle singleParticle;
+
     public float Radius;
     [HideInInspector]
     public float SqrRadius;
@@ -27,7 +32,7 @@ public class SphereCollider : BaseCollider
         }
 
         // Add to collision manager
-        CollisionManager.Instance.AddCollider(this);
+        CollisionManager.Instance.AddCollider(this, this.isSingleParticle);
 
         // Keep current scale, so if in game changes happen to scale, the collider will be scaled accordingly
         this._initialMaxScale = Mathf.Max(this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
@@ -41,7 +46,17 @@ public class SphereCollider : BaseCollider
     public override void UpdateColliderPose(Vector3 displace)
     {
         // displace used for finding min penetration distance for collision
-        this._center = this.transform.TransformPoint(this.displaceCenter + displace);
+        if (!isSingleParticle)
+        {
+            this._center = this.transform.TransformPoint(this.displaceCenter + displace);
+        }
+        else
+        {
+            if (this.singleParticle != null)
+            {
+                this._center = this.transform.TransformPoint(this.singleParticle.position);
+            }
+        }
         //if (this.colliderBoxForOctree != null)
         //{
         //    this.colliderBoxForOctree.UpdateColliderPose(Vector3.zero);
@@ -53,7 +68,27 @@ public class SphereCollider : BaseCollider
         //    var maxScale = Mathf.Max(this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
         //    this.Radius = this._assignedRadius * (maxScale / this._initialMaxScale);
         //}
-        
+
+    }
+
+    public void AssignSingleParticle(Particle p)
+    {
+        this.singleParticle = p;
+    }
+
+    public void ChangeSingleParticlePosition(Vector3 pos)
+    {
+        this.singleParticle.position = pos;
+    }
+
+    public Vector3 GetSingleParticlePosition()
+    {
+        return this.singleParticle.position;
+    }
+
+    public float GetSingleParticleInvMass()
+    {
+        return this.singleParticle.invMass;
     }
 
     //=========================

@@ -63,7 +63,7 @@ public static class Util
             // See if point is bigger than half extents of obb
             float halfLength = halfLenghts[i];
 
-            Logger.Instance.DebugInfo("Proj Value " + i + ": " + projValue + ", HalfLen: " + halfLength, "SPHERE-OBB CHECK");
+            //Logger.Instance.DebugInfo("Proj Value " + i + ": " + projValue + ", HalfLen: " + halfLength, "SPHERE-OBB CHECK");
 
             // Manual clamping
             if (projValue < -halfLength)

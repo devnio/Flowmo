@@ -11,7 +11,7 @@ public class DynamicGrid : MonoBehaviour
     private Vector3[] vertices;
     private Mesh mesh;
 
-    public void Generate(int clothSize = 10)
+    public void Generate(int clothSize = 10, float tileSizeMult = 1f)
     {
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
         mesh.name = "Procedural Grid";
@@ -29,7 +29,7 @@ public class DynamicGrid : MonoBehaviour
         {
             for (int x = 0; x <= xSize; x++, i++)
             {
-                vertices[i] = new Vector3(x - dispX, y - dispY);
+                vertices[i] = new Vector3(x - dispX, y - dispY) * tileSizeMult;
             }
         }
         mesh.vertices = this.vertices;
