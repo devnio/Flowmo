@@ -105,13 +105,7 @@ public static class Util
         return new Tuple<Vector3, bool>(closestPoint, centerIsInsideObb);
     }
 
-    /// <summary>
-    /// Compare floats.
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <param name="epsilon"></param>
-    /// <returns></returns>
+    // compare floats if they are equal (true) or not (false)
     public static bool CMP(float a, float b, float epsilon = float.Epsilon)
     {
         const float MinNormal = 1.175494E-38f;
@@ -120,8 +114,7 @@ public static class Util
         float diff = Mathf.Abs(a - b);
 
         if (a.Equals(b))
-        {
-            // shortcut, handles infinities
+        { // shortcut, handles infinities
             return true;
         }
         else if (a == 0 || b == 0 || absA + absB < MinNormal)
@@ -131,11 +124,11 @@ public static class Util
             return diff < (epsilon * MinNormal);
         }
         else
-        {
-            // use relative error
+        { // use relative error
             return diff / (absA + absB) < epsilon;
         }
-    }
+    }
+
 
     // ============================
     // EXTENSIONS

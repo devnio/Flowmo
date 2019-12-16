@@ -204,6 +204,11 @@ public class ColliderBox : BaseCollider
         DrawRectangleAABB();
 	}
 
+    public Cube getOBBVertices()
+    {
+        return this.cube;
+    }
+
 	private void DrawRectangleAABB()
 	{
 		void Draw(CubeIdx From, CubeIdx To)

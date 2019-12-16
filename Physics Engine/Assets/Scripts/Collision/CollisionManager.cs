@@ -98,10 +98,11 @@ public class CollisionManager : Singleton<CollisionManager>
     {
         this.CollidersCollisions();
         this.ColliderAndSingleParticleCollisions();
-        if (checkSingleParticleCollisions)
-        {
-            // TODO: this.SingleParticleCollisions()
-        }
+        //if (checkSingleParticleCollisions)
+        //{
+        //    // TODO: this.SingleParticleCollisions()
+        //    // Not necessary anymore
+        //}
     }
 
 
@@ -142,15 +143,15 @@ public class CollisionManager : Singleton<CollisionManager>
                 // OBB vs OBB
                 if (Colliders[i] as ColliderBox != null && Colliders[j] as ColliderBox != null)
                 {
-                    if (AreOBBsColliding((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]))
+                    CollisionManifold features = Geometry.FindCollisionFeatures((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
+                    if (!features.colliding)
                     {
-                        // Collision Resolution
-                        CollisionResolutionOBB((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
-
-                        Logger.Instance.DebugInfo("Collision happened [OBB vs OBB]: " +
-                                                    Colliders[i].Id + " - " +
-                                                    Colliders[j].Id + " !",
-                                                    "COLLISION_MANAGER");
+                        Debug.Log("No collision happened.");
+                    }
+                    else
+                    {
+                        this.CollisionResolutionOBB(features, (ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
+                        Debug.Log("COLLISION: collision happened.");
                     }
                 }
 
@@ -621,27 +622,17 @@ public class CollisionManager : Singleton<CollisionManager>
     /// <summary>
     /// If collision happened project the ParticleObject back to prevCenterMass.
     /// </summary>
-    private List<Vector3> DebugSpheresContactObb;
-    public void CollisionResolutionOBB(ColliderBox b1, ColliderBox b2)
+    /// <param name="b1"></param>
+    /// <param name="b2"></param>
+    public void CollisionResolutionOBB(CollisionManifold cm, ColliderBox b1, ColliderBox b2)
     {
-        // Find min penetration axis
-        AreOBBsColliding(b1, b2, true);
-        //ShowCurrentSeparatingPlane();
 
-        // TODO: Assume the first object has the particle object (REMOVE THIS ASSUMPTION)
-        // CASE OF VERTEX
-        Logger.Instance.DebugInfo("COLLISION TYPE: " + this.currentCollType);
-        if (this.currentCollType == CollType.Vertex)
-        {
+        Vector3 currPoint = cm.avg_depth;
+        Vector3 projPoint = cm.avg_contact;
 
-        }
+        float dist = Vector3.Magnitude(currPoint - projPoint);
 
-
-        // TODO: ABOVE STEP Too slow: instead -> when searching for min axis and min distance [AreOBBsColliding(b1, b2, true);]
-        // -> try also to find the closest vertex to the plane/cube -> and then use that vertex to project our using the min axis/distance.
-
-        Vector3 currPoint = DebugSpheresContactObb[0];
-        Vector3 projPoint = currPoint + this.currentMinPenetrationAxis.normalized * this.currentMinPenetrationDistance;
+        if (Util.CMP(dist, 0.0f) || float.IsNaN(dist)) return;
 
         if (!b1.IsStatic() && !b2.IsStatic())
         {
@@ -652,10 +643,6 @@ public class CollisionManager : Singleton<CollisionManager>
             if (!b1.IsStatic()) this.SeparateParticleObjects(b1.GetParticleObject(), currPoint, projPoint);
             else if (!b2.IsStatic()) this.SeparateParticleObjects(b2.GetParticleObject(), projPoint, currPoint);
         }
-
-        Logger.Instance.DebugInfo("Updated particles, min axis dist: " + this.currentMinPenetrationDistance + ", min axis: " + this.currentMinPenetrationAxis, "INFO COLLISION RESOLUTION");
-        Logger.Instance.DebugInfo(this.currentMinPenetrationDistance.ToString());
-        Logger.Instance.DebugInfo(this.currentMinPenetrationAxis.ToString());
     }
 
     //---------------------------------
@@ -669,21 +656,46 @@ public class CollisionManager : Singleton<CollisionManager>
 
     private void OnDrawGizmos()
     {
-        Color col = Color.cyan;
-        col.a = 0.7f;
-        Gizmos.color = col;
+        //    if (this.Colliders == null || this.Colliders.Count == 0) return;
 
-        //Gizmos.DrawSphere(this.currentClosestPointOnObb, 0.3f);
+        //    Color[] colors = { Color.red, Color.green, Color.blue, Color.magenta, Color.cyan, Color.yellow, Color.black, Color.white };
 
-        if (DebugSpheresContactObb != null)
-        {
-            col = Color.magenta;
-            col.a = 0.7f;
-            foreach (Vector3 v in DebugSpheresContactObb)
-            {
-                Gizmos.DrawSphere(v, 0.03f);
-            }
-        }
+        //    Gizmos.color = Color.black;
+
+        //    //Gizmos.DrawSphere(this.currentClosestPointOnObb, 0.2f);
+
+        //    //Debug.Log("Collider count: " + Colliders.Count);
+        //    ColliderBox c0 = (ColliderBox)this.Colliders[0];
+        //    ColliderBox c1 = (ColliderBox)this.Colliders[1];
+
+        //    /********* CollisionManifold -  *********/
+        //    CollisionManifold cM = new CollisionManifold();
+        //    //CollisionManifold.Reset(cM);
+        //    cM.Reset();
+        //    cM = Geometry.FindCollisionFeatures((ColliderBox)c0, (ColliderBox)c1);
+
+        //    //Debug.Log("Collision of " + c0.Id.ToString() + " to " + c1.Id.ToString() + ": " + cM.colliding.ToString());
+
+        //    if (cM.colliding)
+        //    {
+        //        foreach (Vector3 ip in cM.contacts)
+        //        {
+        //            Gizmos.color = Color.black;
+        //            Gizmos.DrawSphere(ip, 0.05f);
+        //        }
+
+        //        foreach (Vector3 dp in cM.depths)
+        //        {
+        //            Gizmos.color = Color.white;
+        //            Gizmos.DrawSphere(dp, 0.05f);
+        //        }
+
+        //        Gizmos.color = Color.black;
+        //        Gizmos.DrawSphere(cM.avg_contact, 0.1f);
+
+        //        Gizmos.color = Color.white;
+        //        Gizmos.DrawSphere(cM.avg_depth, 0.1f);
+        //    }
     }
 }
 
