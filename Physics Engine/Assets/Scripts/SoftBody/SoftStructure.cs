@@ -26,7 +26,11 @@ public class SoftStructure : MonoBehaviour
     private GameObject[] VelocityArrows_DB;
 
     // Colliders of each particle
-    private SphereCollider[] sphereColliders;
+    [HideInInspector]
+    public SphereCollider[] sphereColliders;
+    public float sphereCollRadius = 0.3f;
+
+    private bool dragMode; // interaction
 
     private void Start()
     {
@@ -60,50 +64,92 @@ public class SoftStructure : MonoBehaviour
         // For visualizer
         E_pointsTransformedInLocalSpace = true;
 
+        // Prev pos
+        foreach (Particle p in particles)
+        {
+            p.prevPosition = p.position;
+            p.velocity = Vector3.zero;
+        }
+
+        // Init sphere colliders
+        this.CreateSphereColliders();
+
         // Add Tetrahederon and Bounding constraints 
         constraints = new List<Constraint>();
         constraints.Add(new DistanceConstraint(particles, distTuples));
         constraints.Add(new PointConstraint(particles, pointTuples));
     }
 
-    /// <summary>
-    /// Resets implicit velocity by changing prevPos. Not used now.
-    /// </summary>
-    public void ResetVelocity()
-    {
-        foreach (Particle p in particles)
-        {
-            p.prevPosition = p.position;
-            p.velocity = Vector3.zero;
-        }
-    }
-
     public void UpdateStep(float dt)
     {
-        // Integration
-        foreach (Particle p in particles)
+        if (!this.dragMode)
         {
-            Vector3 temp = p.position;
-            p.position += p.position - p.prevPosition + (acceleration * dt * dt) * p.invMass;
-            p.prevPosition = temp;
+            // Integration
+            foreach (Particle p in particles)
+            {
+                Vector3 temp = p.position;
+                p.position += p.position - p.prevPosition + (acceleration * dt * dt) * p.invMass;
+                p.prevPosition = temp;
 
-            // Update velocity used (only for damping now)
-            p.velocity = p.position - p.prevPosition;
+                // Update velocity used (only for damping now)
+                p.velocity = p.position - p.prevPosition;
+            }
         }
-        UpdateSoftStructureBones();
+        this.UpdateSphereColliderPos();
+        this.UpdateSoftStructureBones();
     }
 
     public void SatisfyConstraints()
     {
-        foreach (Constraint c in constraints)
+        if (!this.dragMode)
         {
-            c.ConstraintUpdate();
+            // Distance constraints
+            this.constraints[0].ConstraintUpdate();
+            // Point constraints
+            this.constraints[1].ConstraintUpdate();
         }
     }
 
+    // Updates the position of the colliders based on the associated particle.
+    public void UpdateSphereColliderPos()
+    {
+        for (int i = 0; i < this.particles.Length; i++)
+        {
+            this.sphereColliders[i].UpdateColliderPose(Vector3.zero);
+        }
+    }
+
+    // Update the orientation of each bone.
     public void UpdateSoftStructureBones()
     {
         // TODO
+    }
+
+    // Interaction mode
+    public void ActivateDragMode(bool state)
+    {
+        this.dragMode = state;
+    }
+
+    public bool IsInDragMode() { return this.dragMode; }
+
+    // Create a sphere collider for each particle
+    private void CreateSphereColliders()
+    {
+        int len = this.particles.Length;
+        this.sphereColliders = new SphereCollider[len];
+
+        for (int i = 0; i < len; i++)
+        {
+            SphereCollider sp = this.gameObject.AddComponent<SphereCollider>();
+
+            sp.isSingleParticle = true;
+            sp.AssignSingleParticle(this.particles[i]);
+            sp.Radius = this.sphereCollRadius;
+
+            this.sphereColliders[i] = sp;
+        }
+        UpdateSphereColliderPos();
     }
 
     //------------------------
@@ -170,6 +216,19 @@ public class SoftStructure : MonoBehaviour
                         p2Local = this.transform.TransformPoint(p2Local);
                     }
                     Gizmos.DrawLine(p1Local, p2Local);
+                }
+            }
+
+            if (this.pointTuples != null)
+            {
+                foreach (PointTuple pTup in this.pointTuples)
+                {
+                    Gizmos.color = Color.cyan;
+                    Vector3 pos = pTup.pos;
+                    Vector3 partPoint = this.particles[pTup.p].position;
+
+                    Gizmos.DrawWireSphere(pos, 0.15f);
+                    Gizmos.DrawLine(pos, partPoint);
                 }
             }
 
