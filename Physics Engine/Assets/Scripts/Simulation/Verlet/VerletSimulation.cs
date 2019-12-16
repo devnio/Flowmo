@@ -21,6 +21,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     public List<ParticleObject> ParticleObjects;
     public List<SoftBody> SoftBodyObjects;
     public List<Cloth> ClothObjects;
+    public List<SoftStructure> SoftStructureObjects;
 
 
     private void Update()
@@ -76,6 +77,12 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         {
             cl.UpdateStep(dt);
         }
+
+        // SOFT STRUCTURE OBJ
+        foreach (SoftStructure ss in SoftStructureObjects)
+        {
+            ss.UpdateStep(dt);
+        }
     }
 
 
@@ -110,6 +117,15 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
             for (int i = 0; i < iterations; i++)
             {
                 cl.SatisfyConstraints();
+            }
+        }
+
+        // SOFT STRUCTURE OBJ
+        foreach (SoftStructure ss in SoftStructureObjects)
+        {
+            for (int i = 0; i < iterations; i++)
+            {
+                ss.SatisfyConstraints();
             }
         }
     }
@@ -160,6 +176,24 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         Logger.Instance.DebugInfo("Added a cloth object!");
     }
 
+    /// =====================
+    /// Soft Structure Object
+    /// =====================
+    public void AddSoftStructure(SoftStructure softStructure)
+    {
+        if (SoftStructureObjects == null)
+        {
+            SoftStructureObjects = new List<SoftStructure>();
+        }
+        SoftStructureObjects.Add(softStructure);
+
+        Logger.Instance.DebugInfo("Added a soft structure object!");
+    }
+
+
+    /// =================
+    /// Other
+    /// =================
     public bool _stopSimulation = false;
     public void StopSimulation(bool stop = true)
     {
