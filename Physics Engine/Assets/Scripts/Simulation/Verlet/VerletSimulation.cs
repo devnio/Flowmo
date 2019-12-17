@@ -18,6 +18,7 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
     // PUBLIC
     // ===========
     public int ConstraintIterations = 4;
+    public bool CollisionsInsideConstraintLoop;
     public List<ParticleObject> ParticleObjects;
     public List<SoftBody> SoftBodyObjects;
     public List<Cloth> ClothObjects;
@@ -43,13 +44,26 @@ public class VerletSimulation : Singleton<VerletSimulation>, ISimulation
         // Update RigidBodies
         UpdateParticles(dt);
 
-        for (int i = 0; i < this.ConstraintIterations; i++)
+        if (this.CollisionsInsideConstraintLoop)
+        {
+            for (int i = 0; i < this.ConstraintIterations; i++)
+            {
+                // Detect Collisions
+                CollisionManager.Instance.DetectAndResolveCollisions();
+
+                // Satisfy Constraints
+                SatisfyConstraints(1);
+            }
+        }
+        else
         {
             // Detect Collisions
             CollisionManager.Instance.DetectAndResolveCollisions();
-
-            // Satisfy Constraints
-            SatisfyConstraints(1);
+            for (int i = 0; i < this.ConstraintIterations; i++)
+            {
+                // Satisfy Constraints
+                SatisfyConstraints(1);
+            }
         }
     }
 
