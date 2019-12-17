@@ -31,6 +31,8 @@ public class SoftStructure : MonoBehaviour
     public float sphereCollRadius = 0.3f;
 
     private bool dragMode; // interaction
+    public Transform[] bones;
+    private Quaternion[] initialBoneOrientations;
 
     private void Start()
     {
@@ -62,14 +64,21 @@ public class SoftStructure : MonoBehaviour
         }
 
         // For visualizer
-        E_pointsTransformedInLocalSpace = true;
+        //E_pointsTransformedInLocalSpace = true;
 
         // Prev pos
         foreach (Particle p in particles)
         {
+            //p.position = this.transform.TransformPoint(p.position);
             p.prevPosition = p.position;
             p.velocity = Vector3.zero;
         }
+
+        // Transform to world point constraints
+        //foreach (PointTuple pTup in this.pointTuples)
+        //{
+        //    pTup.pos = this.transform.TransformPoint(pTup.pos);
+        //}
 
         // Init sphere colliders
         this.CreateSphereColliders();
@@ -78,6 +87,12 @@ public class SoftStructure : MonoBehaviour
         constraints = new List<Constraint>();
         constraints.Add(new DistanceConstraint(particles, distTuples));
         constraints.Add(new PointConstraint(particles, pointTuples));
+
+        this.initialBoneOrientations = new Quaternion[this.bones.Length];
+        for (int i = 0; i < this.bones.Length; i++)
+        {
+            this.initialBoneOrientations[i] = this.bones[i].rotation;
+        }
     }
 
     public void UpdateStep(float dt)
@@ -122,8 +137,69 @@ public class SoftStructure : MonoBehaviour
     // Update the orientation of each bone.
     public void UpdateSoftStructureBones()
     {
-        // TODO
+        // Particles
+        Particle p0 = this.particles[0];
+        Particle p1 = this.particles[1];
+        Particle p2 = this.particles[2];
+        Particle p3 = this.particles[3];
+        Particle p4 = this.particles[4];
+        Particle p5 = this.particles[5];
+        Particle p6 = this.particles[6];
+
+        // Constant constraint points
+        Vector3 point0 = this.pointTuples[0].pos;
+        Vector3 point1 = this.pointTuples[1].pos;
+        Vector3 point2 = this.pointTuples[2].pos;
+        Vector3 point3 = this.pointTuples[3].pos;
+        Vector3 point4 = this.pointTuples[4].pos;
+        Vector3 point5 = this.pointTuples[5].pos;
+
+        // The initial constraint vectors
+        Vector3 constVect0 = point0 - p0.position;  // p0.position assumed to be fixed
+        Vector3 constVect1 = point1 - point0;
+        Vector3 constVect2 = point2 - point1;
+        Vector3 constVect3 = point3 - point2;
+        Vector3 constVect4 = point4 - point1;
+        Vector3 constVect5 = point5 - point4;
+
+        // The current vectors (during simulation they move)
+        Vector3 currVect0 = p1.position - p0.position;
+        Vector3 currVect1 = p2.position - p1.position;
+        Vector3 currVect2 = p3.position - p2.position;
+        Vector3 currVect3 = p4.position - p3.position;
+        Vector3 currVect4 = p5.position - p2.position;
+        Vector3 currVect5 = p6.position - p5.position;
+
+        this.bones[0].rotation = Quaternion.FromToRotation(constVect0, currVect0) * this.initialBoneOrientations[0];
+
+        this.bones[1].rotation = Quaternion.FromToRotation(constVect4, currVect4) * this.initialBoneOrientations[1];
+        this.bones[2].rotation = Quaternion.FromToRotation(constVect5, currVect5) * this.initialBoneOrientations[2];
+
+        this.bones[3].rotation = Quaternion.FromToRotation(constVect2, currVect2) * this.initialBoneOrientations[3];
+        this.bones[4].rotation = Quaternion.FromToRotation(constVect3, currVect3) * this.initialBoneOrientations[4];
+
     }
+
+    //public void UpdateSoftStructureBones()
+    //{
+    //    // TODO
+    //    // Particles
+    //    Particle p0 = this.particles[0];
+    //    Particle p1 = this.particles[1];
+    //    Particle p2 = this.particles[2];
+
+    //    Vector3 point0 = this.pointTuples[0].pos;
+    //    Vector3 point1 = this.pointTuples[1].pos;
+
+    //    Vector3 constVect0 = point0 - p0.position;
+    //    Vector3 constVect1 = point1 - point0;
+
+    //    Vector3 currVect0 = p1.position - p0.position;
+    //    Vector3 currVect1 = p2.position - p1.position;
+
+    //    this.bone1.rotation = Quaternion.FromToRotation(constVect0, currVect0);
+    //    this.bone2.rotation = Quaternion.FromToRotation(constVect1, currVect1);
+    //}
 
     // Interaction mode
     public void ActivateDragMode(bool state)
@@ -226,6 +302,12 @@ public class SoftStructure : MonoBehaviour
                     Gizmos.color = Color.cyan;
                     Vector3 pos = pTup.pos;
                     Vector3 partPoint = this.particles[pTup.p].position;
+
+                    if (!E_pointsTransformedInLocalSpace)
+                    {
+                        pos = this.transform.TransformPoint(pos);
+                        partPoint = this.transform.TransformPoint(partPoint);
+                    }
 
                     Gizmos.DrawWireSphere(pos, 0.15f);
                     Gizmos.DrawLine(pos, partPoint);
