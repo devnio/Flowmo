@@ -73,49 +73,47 @@ Here is a simpler example that shows the contact points and depth points correct
 ![Gameplay](media/obb_coll1.mp4)
 
 
-### FIxed Joints
-
-
+### Fixed Joints
+Since we work with particles we can simply fix a particle in space (invmass = 0). The constraint solver takes care of making the simulation look good.
 ![Gameplay](media/FixedParticle.mp4)
 
 ## Dynamic Octree
 Debug features of our Octree. We visualize for each node the contained items and for each item the parent node. This helped us a lot to find bugs.
-![SoftBody Generate Mesh](SoftBody_Start.mp4)
+![SoftBody Generate Mesh](media/SoftBody_Start.mp4)
 
 Here we show how the tree dynamically reduces its subdivisions.
-![SoftBody Generate Mesh](OctreeSubdivisions.mp4)
+![SoftBody Generate Mesh](media/OctreeSubdivisions.mp4)
 
 
 ## Soft Bodies
 We started off tackling a simple generated quad mesh. 
 We create our distance constraints with tunable stiffness and damping and assign it to each pair of vertices. 
 
-![SoftBody Generate Mesh](SoftBody_Start.mp4)
+![SoftBody Generate Mesh](media/SoftBody_Start.mp4)
 
 ### Automatic generation of softbodies
 We also implemented an automatic softbody constructor that generates a softbody based from the inspected mesh. 
-![SoftBody Cubes with different stiffness and damping values](SoftBody_Group.mp4)
+![SoftBody Cubes with different stiffness and damping values](media/SoftBody_Group.mp4)
 
 ### SoftBodies of rigged and skinnes meshes
 
 Moreover we implemented new type of constraints (PointConstraint) that tries to keep a particle attached to a specified point (this is then fed to our constraint solver) and an interaction manager (given by a raycast and collision between ray vs sphere).
 
-![SoftBody Point Constraints](Point_Constraints.mp4)
+![SoftBody Point Constraints](media/Point_Constraints.mp4)
 
 
 From this we can use a rigged (for this we only intend the skeleton, so no actual professional rig is required) and skinned mesh to produce a nice soft object with a **lot** less constraints and **more stability**.
 
 From the displacement of the constraints we compute the angle between the ideal positions and the displaced ones and change the orientation of the correct bone of the skeleton accordingly.
-![SoftBody Point With Tree](Tree_PointConstr.mp4)
+![SoftBody Point With Tree](media/Tree_PointConstr.mp4)
 
-
-## Cloth Simulation *[Scenes/Cloth]*
-
-     - Open scene in Unity [Scenes/Cloth]. 
+     - Open scene in Unity [Scenes/TreeInteraction]. 
      - Press play.
-     - Select parameters by dragging sliders.
-     - Press generate.
-     - (For collisions enable a sphere or obb in the scene placed inside VerletSim)
+     - In the game view select a sphere (activate gizmos if you don't see them)
+     - While holding down the mouse button move the nodes as you prefer.
+     - Release to see the motion in action.
+
+## Cloth Simulation *[Assets/Scenes/Cloth]*
 
 In out physics engine we also implemented a Cloth Simulator.
 You can set the different parameters manually and generate a cloth.
@@ -142,6 +140,11 @@ Cloth:
 Siff Cloth:
 ![Higher stiffness cloth](media\ClothCollision5.mp4)
 
+     - Open scene in Unity [Scenes/Cloth]. 
+     - Press play.
+     - Select parameters by dragging sliders.
+     - Press generate.
+     - (For collisions enable a sphere or obb in the scene placed inside VerletSim)
 
 ## Interactivity
 To give an example of a game we developed a small mini-golf/billiards game.
@@ -151,9 +154,6 @@ The goal is to push all the balls in the scene past the obstacles into the hole 
 
 ![Video](media/game1.mp4)
 ![Video](media/game2.mp4)
-
-
-## Soft Bodies of skinned meshes
 
 
 ## Final Scene
