@@ -79,10 +79,13 @@ Since we work with particles we can simply fix a particle in space (invmass = 0)
 
 ## Dynamic Octree
 Debug features of our Octree. We visualize for each node the contained items and for each item the parent node. This helped us a lot to find bugs.
-![SoftBody Generate Mesh](media/SoftBody_Start.mp4)
+![Octree Debug](media/OctreeDebug.jpg)
+
+Here we show how the tree dynamically augments its subdivisions.
+![Octree Generate Mesh](media/OctreeSubdivisions.mp4)
 
 Here we show how the tree dynamically reduces its subdivisions.
-![SoftBody Generate Mesh](media/OctreeSubdivisions.mp4)
+![Octree Generate Mesh](media/OctreeRemoval.mp4)
 
 
 ## Soft Bodies
@@ -157,3 +160,4 @@ The goal is to push all the balls in the scene past the obstacles into the hole 
 
 
 ## Final Scene
+![Final Cutscene](pbs_trailer.mp4)
