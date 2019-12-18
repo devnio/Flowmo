@@ -138,10 +138,10 @@ We enabled OBBs and Spheres to collide with the cloth. For this we required to c
 
 Example:
 Cloth:
-![Collision sphere cloth](media\ClothCollision3.mp4)
+![Collision sphere cloth](media/ClothCollision3.mp4)
 
-Siff Cloth:
-![Higher stiffness cloth](media\ClothCollision5.mp4)
+Stiff Cloth:
+![Higher stiffness cloth](media/ClothCollision5.mp4)
 
      - Open scene in Unity [Scenes/Cloth]. 
      - Press play.
@@ -160,4 +160,4 @@ The goal is to push all the balls in the scene past the obstacles into the hole 
 
 
 ## Final Scene
-![Final Cutscene](pbs_trailer.mp4)
+![Final Cutscene](media/pbs_trailer.mp4)
