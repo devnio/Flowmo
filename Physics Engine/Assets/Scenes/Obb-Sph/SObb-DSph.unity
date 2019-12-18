@@ -1025,9 +1025,11 @@ MonoBehaviour:
   _dt: 0.02
   _timeScale: 1
   ConstraintIterations: 5
+  CollisionsInsideConstraintLoop: 1
   ParticleObjects: []
   SoftBodyObjects: []
   ClothObjects: []
+  SoftStructureObjects: []
   _stopSimulation: 0
 --- !u!1 &1379738642
 GameObject:

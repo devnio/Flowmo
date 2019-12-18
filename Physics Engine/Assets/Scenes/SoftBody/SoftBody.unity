@@ -762,9 +762,11 @@ MonoBehaviour:
   _dt: 0.02
   _timeScale: 1
   ConstraintIterations: 4
+  CollisionsInsideConstraintLoop: 0
   ParticleObjects: []
   SoftBodyObjects: []
   ClothObjects: []
+  SoftStructureObjects: []
   _stopSimulation: 0
 --- !u!1 &1379738642
 GameObject:
@@ -1076,7 +1078,7 @@ MonoBehaviour:
   prevCenterOfMass: {x: 0, y: 0, z: 0}
   centerOfMass: {x: 0, y: 0, z: 0}
   Collider: {fileID: 0}
-  spring_k: 0.009
+  spring_k: 0.01
   damp: 0
   UseGravity: 1
   acceleration: {x: 0, y: 0, z: 0}

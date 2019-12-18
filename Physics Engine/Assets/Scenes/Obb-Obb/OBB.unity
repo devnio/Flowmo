@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.4208909, g: 0.71482235, b: 0.8809126, a: 1}
+  m_IndirectSpecularColor: {r: 0.42101374, g: 0.714805, b: 0.8810152, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1192,12 +1192,13 @@ MonoBehaviour:
   dontDestroy: 0
   _dt: 0.02
   _timeScale: 1
-  ConstraintIterations: 5
+  ConstraintIterations: 10
+  CollisionsInsideConstraintLoop: 1
   ParticleObjects: []
   SoftBodyObjects: []
   ClothObjects: []
   SoftStructureObjects: []
-  _stopSimulation: 1
+  _stopSimulation: 0
 --- !u!1 &1379738642
 GameObject:
   m_ObjectHideFlags: 0
@@ -1906,11 +1907,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2005486243}
     m_Modifications:
-    - target: {fileID: 5503655379343125216, guid: 855cb4351596a194298d3e08fb6445c5,
-        type: 3}
-      propertyPath: m_Name
-      value: CubeMesh
-      objectReference: {fileID: 0}
     - target: {fileID: 5503655378899349072, guid: 855cb4351596a194298d3e08fb6445c5,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1966,25 +1962,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5503655379343125223, guid: 855cb4351596a194298d3e08fb6445c5,
+    - target: {fileID: 5503655379343125216, guid: 855cb4351596a194298d3e08fb6445c5,
         type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 1661079169}
-    - target: {fileID: 5503655379343125219, guid: 855cb4351596a194298d3e08fb6445c5,
-        type: 3}
-      propertyPath: _center.x
-      value: 1.13
-      objectReference: {fileID: 0}
-    - target: {fileID: 5503655379343125219, guid: 855cb4351596a194298d3e08fb6445c5,
-        type: 3}
-      propertyPath: _center.y
-      value: 4.102
-      objectReference: {fileID: 0}
-    - target: {fileID: 5503655379343125219, guid: 855cb4351596a194298d3e08fb6445c5,
-        type: 3}
-      propertyPath: _center.z
-      value: -0.751
+      propertyPath: m_Name
+      value: CubeMesh
       objectReference: {fileID: 0}
     - target: {fileID: 5503655379343125218, guid: 855cb4351596a194298d3e08fb6445c5,
         type: 3}
@@ -2041,5 +2022,25 @@ PrefabInstance:
       propertyPath: particles.Array.data[3].invMass
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5503655379343125219, guid: 855cb4351596a194298d3e08fb6445c5,
+        type: 3}
+      propertyPath: _center.x
+      value: 1.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 5503655379343125219, guid: 855cb4351596a194298d3e08fb6445c5,
+        type: 3}
+      propertyPath: _center.y
+      value: 4.102
+      objectReference: {fileID: 0}
+    - target: {fileID: 5503655379343125219, guid: 855cb4351596a194298d3e08fb6445c5,
+        type: 3}
+      propertyPath: _center.z
+      value: -0.751
+      objectReference: {fileID: 0}
+    - target: {fileID: 5503655379343125223, guid: 855cb4351596a194298d3e08fb6445c5,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 1661079169}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 855cb4351596a194298d3e08fb6445c5, type: 3}

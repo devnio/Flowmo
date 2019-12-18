@@ -146,12 +146,12 @@ public class CollisionManager : Singleton<CollisionManager>
                     CollisionManifold features = Geometry.FindCollisionFeatures((ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
                     if (!features.colliding)
                     {
-                        Debug.Log("No collision happened.");
+                        //Debug.Log("No collision happened.");
                     }
                     else
                     {
                         this.CollisionResolutionOBB(features, (ColliderBox)Colliders[i], (ColliderBox)Colliders[j]);
-                        Debug.Log("COLLISION: collision happened.");
+                        //Debug.Log("COLLISION: collision happened.");
                     }
                 }
 
@@ -203,16 +203,16 @@ public class CollisionManager : Singleton<CollisionManager>
     {
         if (collTypes == ColliderTypes.FirstRigidBody_SecondSingleParticle)
         {
-            ParticleObject po = bc.GetParticleObject();
-            float[] c1 = this.ComputeParticlesCoefficients(po, currPoint);
-            float lambda1 = this.ComputeLambda(c1);
+            //ParticleObject po = bc.GetParticleObject();
+            //float[] c1 = this.ComputeParticlesCoefficients(po, currPoint);
+            //float lambda1 = this.ComputeLambda(c1);
             Logger.Instance.DebugInfo("Updating FirstRigidBody_SecondSingleParticle object", "COLLISION");
 
             // Update the dynamic object
-            for (int i = 0; i < 4; i++)
-            {
-                po.particles[i].position = po.particles[i].position + (lambda1 * c1[i] * (projPoint - currPoint) * 0.5f) * po.particles[i].invMass;
-            }
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    po.particles[i].position = po.particles[i].position + (lambda1 * c1[i] * (projPoint - currPoint) * 0.5f) * po.particles[i].invMass;
+            //}
 
             // Update also the single particle
             Vector3 newPos = sp.GetSingleParticlePosition() - ((projPoint - currPoint)) * 0.5f * sp.GetSingleParticleInvMass();
@@ -234,9 +234,6 @@ public class CollisionManager : Singleton<CollisionManager>
 
     private void CollisionResolutionSphereWithSingleParticle(SphereCollider sp1, SphereCollider sp2, float distance, ColliderTypes collTypes)
     {
-        // TODO: don't instantiate so many
-        //InstantiateParticles.Instance.CreateLeafParticleSystem(sp2.transform);
-
         Vector3 dir = sp2._center - sp1._center;
         dir.Normalize();
 

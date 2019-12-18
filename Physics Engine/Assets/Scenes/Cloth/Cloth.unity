@@ -2834,13 +2834,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 921401148}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6eeeaa2d19844112a7d65a2642a811d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroy: 0
-  DebugInfoActive: 0
+  DebugInfoActive: 1
 --- !u!4 &921401150
 Transform:
   m_ObjectHideFlags: 0
@@ -4108,10 +4108,12 @@ MonoBehaviour:
   dontDestroy: 0
   _dt: 0.02
   _timeScale: 1
-  ConstraintIterations: 10
+  ConstraintIterations: 7
+  CollisionsInsideConstraintLoop: 1
   ParticleObjects: []
   SoftBodyObjects: []
   ClothObjects: []
+  SoftStructureObjects: []
   _stopSimulation: 1
 --- !u!1 &1379738642
 GameObject:
