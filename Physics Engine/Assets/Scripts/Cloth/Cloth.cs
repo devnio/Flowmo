@@ -180,7 +180,7 @@ public class Cloth : MonoBehaviour
             SphereCollider sp = this.gameObject.AddComponent<SphereCollider>();
             sp.AssignSingleParticle(this.particles[i]);
             sp.isSingleParticle = true;
-            sp.Radius = clothSphereColliderSize;
+            sp.Radius = this.clothParams.clothSize / 10f * 1f;
             this.sphereColliders[i] = sp;
 
             // Clamp end particles

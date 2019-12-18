@@ -82,7 +82,7 @@ public class UIClothManager : Singleton<UIClothManager>
 
     public void Slider_ClothResolution_Changed()
     {
-        int sliderValue = Mathf.Clamp((int)(clothResolution_Slider.value * 20f), 3, 20);
+        int sliderValue = Mathf.Clamp((int)(clothResolution_Slider.value * 12f), 3, 12);
         clothResolution_SliderText.text = sliderValue.ToString();
         cloth.clothParams.clothSize = sliderValue;
     }

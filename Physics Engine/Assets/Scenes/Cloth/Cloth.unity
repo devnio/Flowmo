@@ -1411,7 +1411,7 @@ PrefabInstance:
     - target: {fileID: 6276257886963179198, guid: 3085f2a2b87884c6ba1f3b281c4924b1,
         type: 3}
       propertyPath: m_Name
-      value: Cube_1
+      value: Cube
       objectReference: {fileID: 0}
     - target: {fileID: 6276257886963179198, guid: 3085f2a2b87884c6ba1f3b281c4924b1,
         type: 3}
@@ -3936,7 +3936,7 @@ PrefabInstance:
     - target: {fileID: 3127220693774362486, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
       propertyPath: m_Name
-      value: Sphere_1
+      value: Sphere
       objectReference: {fileID: 0}
     - target: {fileID: 3127220693774362486, guid: 47598f090a8dc5340966bd5d092f0456,
         type: 3}
