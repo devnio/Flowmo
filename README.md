@@ -130,7 +130,7 @@ Structural constraints     |  Shear constraints        |  Bending constraints (s
 
 
 ### Example with a subset of the constraints and very low stiffness.
-![Low stiffness cloth with subset of constraints](media\Cloth_OnlyStructuralAndShearConstraints.mp4)
+![Low stiffness cloth with subset of constraints](media/Cloth_OnlyStructuralAndShearConstraints.mp4)
 
 
 ### Cloth collision
