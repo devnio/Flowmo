@@ -1,10 +1,4 @@
 # Physically-based Simulation 2019 - FlowMo
-Nihat Isik
-
-Marion Deichmann
-
-Qais El Okaili
-
 ## Introduction
 
 *Project for the ETH course Physically-based Simulation 2019*
@@ -96,7 +90,7 @@ We create our distance constraints with tunable stiffness and damping and assign
 
 ### Automatic generation of softbodies
 We also implemented an automatic softbody constructor that generates a softbody based from the inspected mesh. 
-![SoftBody Cubes with different stiffness and damping values](media/SoftBody_Group.mp4)
+[SoftBody Cubes with different stiffness and damping values](media/SoftBody_Group.mp4)
 
 ### SoftBodies of rigged and skinnes meshes
 
@@ -161,3 +155,11 @@ The goal is to push all the balls in the scene past the obstacles into the hole 
 
 ## Final Scene
 [Final Cutscene](media/pbs_trailer.mp4)
+
+## Authors
+Nihat Isik
+
+Marion Deichmann
+
+Qais El Okaili
+
