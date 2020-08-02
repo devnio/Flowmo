@@ -36,16 +36,16 @@ To run: Select the folder "Physics Engine and open as a project in Unity. All de
 ### **Collisions**: Sphere | Sphere
 Here the two white spheres are rigid bodies from unity for comparison. The two spheres in the back are what we implemented. Shown is also the tetrahedon consisting of four particles inside the spheres used for the Verlet Simulation. 
 
-![Gameplay](media/SphereSphere.mp4)
+[SphereSphereVid](media/SphereSphere.mp4)
 
 ### **Collisions**: Sphere | OBB
 Here again the white cubes and the white spheres are rigid bodies from Unity for comparison with our implementation. Our implementation is on the left on the first two videos and on the right on the third video. We always visulaize the tetrahedron inside the cubes/spheres that consists of four particles. 
 
-![Gameplay](media/ObbSphere_Comparison.mp4)
+[ObbSphere_ComparisonVid](media/ObbSphere_Comparison.mp4)
 
-![Gameplay](media/ObbSphere_Comparison2.mp4)
+[ObbSphere_ComparisonVid2](media/ObbSphere_Comparison2.mp4)
 
-![Gameplay](media/SphereObb_Comparison3.mp4)
+[SphereObb_ComparisonVid3](media/SphereObb_Comparison3.mp4)
 
 
 ### **Collisions**: OBB | OBB
@@ -54,45 +54,45 @@ We couldn't finish the collision detection for the OBBs completely. We invested 
 Here are some working examples:
 
 
-![Gameplay](media/obb_collision1.mp4)
+[Obb_CollisionVid1](media/obb_collision1.mp4)
 
-![Gameplay](media/obb_collision2.mp4)
+[Obb_CollisionVid2](media/obb_collision2.mp4)
 
-![Gameplay](media/obb_collision3.mp4)
+[Obb_CollisionVid3](media/obb_collision3.mp4)
 
 
 The collision resolution works perfect, however we found out that for the collision detection sometimes the hit-normal, a normal that detects the orientation the two OBBs collided from, was sometimes wrong when the OBBs were in a particular orientation to each other. Here is an example of this:
 
-![Gameplay](media/obb_coll2.mp4)
+[Obb_Collision2Vid1](media/obb_coll2.mp4)
 
 
 In this video the black spheres are the contact points arising from the collision between the two OBBs. The white spheres are the depth points. You can see that when going out too much the spheres start to be erronously located outside the collision surface. 
 
 Here is a simpler example that shows the contact points and depth points correctly:
 
-![Gameplay](media/obb_coll1.mp4)
+[Obb_CollisionVid1](media/obb_coll1.mp4)
 
 
 ### Fixed Joints
 Since we work with particles we can simply fix a particle in space (invmass = 0). The constraint solver takes care of making the simulation look good.
-![Gameplay](media/FixedParticle.mp4)
+[FixedParticle_Vid](media/FixedParticle.mp4)
 
 ## Dynamic Octree
 Debug features of our Octree. We visualize for each node the contained items and for each item the parent node. This helped us a lot to find bugs.
 ![Octree Debug](media/OctreeDebug.jpg)
 
 Here we show how the tree dynamically augments its subdivisions.
-![Octree Generate Mesh](media/OctreeSubdivisions.mp4)
+[Octree Generated Mesh Vid](media/OctreeSubdivisions.mp4)
 
 Here we show how the tree dynamically reduces its subdivisions.
-![Octree Generate Mesh](media/OctreeRemoval.mp4)
+[Octree Generate Mesh Removal](media/OctreeRemoval.mp4)
 
 
 ## Soft Bodies
 We started off tackling a simple generated quad mesh. 
 We create our distance constraints with tunable stiffness and damping and assign it to each pair of vertices. 
 
-![SoftBody Generate Mesh](media/SoftBody_Start.mp4)
+[SoftBody Generate Mesh](media/SoftBody_Start.mp4)
 
 ### Automatic generation of softbodies
 We also implemented an automatic softbody constructor that generates a softbody based from the inspected mesh. 
@@ -102,13 +102,13 @@ We also implemented an automatic softbody constructor that generates a softbody 
 
 Moreover we implemented new type of constraints (PointConstraint) that tries to keep a particle attached to a specified point (this is then fed to our constraint solver) and an interaction manager (given by a raycast and collision between ray vs sphere).
 
-![SoftBody Point Constraints](media/Point_Constraints.mp4)
+[SoftBody Point Constraints](media/Point_Constraints.mp4)
 
 
 From this we can use a rigged (for this we only intend the skeleton, so no actual professional rig is required) and skinned mesh to produce a nice soft object with a **lot** less constraints and **more stability**.
 
 From the displacement of the constraints we compute the angle between the ideal positions and the displaced ones and change the orientation of the correct bone of the skeleton accordingly.
-![SoftBody Point With Tree](media/Tree_PointConstr.mp4)
+[SoftBody Point With Tree](media/Tree_PointConstr.mp4)
 
      - Open scene in Unity [Scenes/TreeInteraction]. 
      - Press play.
@@ -130,7 +130,7 @@ Structural constraints     |  Shear constraints        |  Bending constraints (s
 
 
 ### Example with a subset of the constraints and very low stiffness.
-![Low stiffness cloth with subset of constraints](media/Cloth_OnlyStructuralAndShearConstraints.mp4)
+[Low stiffness cloth with subset of constraints](media/Cloth_OnlyStructuralAndShearConstraints.mp4)
 
 
 ### Cloth collision
@@ -138,10 +138,10 @@ We enabled OBBs and Spheres to collide with the cloth. For this we required to c
 
 Example:
 Cloth:
-![Collision sphere cloth](media/ClothCollision3.mp4)
+[Collision sphere cloth](media/ClothCollision3.mp4)
 
 Stiff Cloth:
-![Higher stiffness cloth](media/ClothCollision5.mp4)
+[Higher stiffness cloth](media/ClothCollision5.mp4)
 
      - Open scene in Unity [Scenes/Cloth]. 
      - Press play.
@@ -155,9 +155,9 @@ The goal is to push all the balls in the scene past the obstacles into the hole 
 
 *This scene can be found on the branch interaction.*
 
-![Video](media/game1.mp4)
-![Video](media/game2.mp4)
+[GameVideo1](media/game1.mp4)
+[GameVideo2](media/game2.mp4)
 
 
 ## Final Scene
-![Final Cutscene](media/pbs_trailer.mp4)
+[Final Cutscene](media/pbs_trailer.mp4)
